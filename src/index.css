@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --color-border: var(--border);
+}
+
+:root {
+  --bg-primary: #080810;
+  --bg-secondary: #0F0F1A;
+  --bg-card: #13131F;
+  --bg-hover: #1A1A2E;
+  --accent: #8B5CF6;
+  --accent-light: #A78BFA;
+  --accent-subtle: #1E1B3A;
+  --text-primary: #F1F0FF;
+  --text-secondary: #8B8AA8;
+  --text-muted: #4B4A65;
+  --border: #1E1D35;
+  --border-soft: #2A2847;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px];
+  }
+  
+  .btn-primary {
+    @apply bg-[var(--accent)] text-white px-4 py-2 font-medium rounded-lg 
+           transition-all duration-200 hover:bg-[#7c3aed] hover:shadow-[0_0_12px_rgba(139,92,246,0.4)] active:scale-[0.98];
+  }
+
+  .input-field {
+    @apply bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-primary)]
+           focus:outline-none focus:border-[var(--accent)] transition-all;
+  }
+
+  .section-title {
+    @apply text-[12px] uppercase tracking-[0.8px] text-[var(--text-muted)] font-semibold;
+  }
+
+  .list-row {
+    @apply transition-colors duration-200 hover:bg-[var(--bg-hover)];
+  }
+
+  .amount {
+    @apply font-mono font-light; /* 300 weight */
+  }
+
+  /* Utilities to prevent heavy shadows globally if standard tailwind shadows are used */
+  .shadow-lg, .shadow-md, .shadow-xl, .shadow-2xl {
+    box-shadow: none !important;
+  }
+}
