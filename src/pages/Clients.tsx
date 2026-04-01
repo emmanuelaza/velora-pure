@@ -9,7 +9,8 @@ import {
   Trash2, 
   Edit2,
   ChevronRight,
-  UserPlus
+  UserPlus,
+  FileText
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -190,7 +191,12 @@ export default function Clients() {
 
               <div className="space-y-4 flex-1">
                 <div>
-                  <h3 className="text-xl font-bold text-[var(--text-primary)] truncate pr-8">{client.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-[var(--text-primary)] truncate">{client.name}</h3>
+                  {client.notes && (
+                    <FileText className="w-4 h-4 text-[var(--warning)] shrink-0" />
+                  )}
+                </div>
                   <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-1">
                     <Phone className="w-4 h-4" />
                     <span>{formatPhone(client.phone)}</span>

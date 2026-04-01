@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   Trash2,
   Phone,
-  MapPin
+  MapPin,
+  FileText,
+  Save
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -51,6 +53,8 @@ export default function ClientDetail() {
   const [loading, setLoading] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const [internalNote, setInternalNote] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
     if (business && id) {
@@ -70,6 +74,7 @@ export default function ClientDetail() {
       
       if (clientError) throw clientError;
       setClient(clientData);
+      setInternalNote(clientData.notes || '');
 
       // Fetch Services
       const { data: servicesData, error: servicesError } = await supabase
@@ -102,6 +107,25 @@ export default function ClientDetail() {
       toast.success(`Servicio marcado como ${newStatus === 'paid' ? 'pagado' : 'pendiente'}`);
     } catch (error: any) {
       toast.error('Error al actualizar servicio');
+    }
+  };
+
+  const handleSaveNote = async () => {
+    if (!id) return;
+    setSavingNote(true);
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ notes: internalNote })
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Nota interna guardada');
+      setClient(prev => prev ? { ...prev, notes: internalNote } : null);
+    } catch (error: any) {
+      toast.error('Error al guardar nota');
+    } finally {
+      setSavingNote(false);
     }
   };
 
@@ -194,6 +218,29 @@ export default function ClientDetail() {
                   <p className="text-sm text-[#F5F5F5] bg-[#111] p-3 rounded-lg border border-[#2A2A2A]">{client.notes}</p>
                 </div>
               )}
+            </div>
+          </section>
+
+          <section className="card space-y-4">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[var(--accent)]" />
+              Notas Internas
+            </h3>
+            <div className="space-y-4">
+              <textarea 
+                className="input-field w-full h-32 resize-none text-sm placeholder-[var(--text-secondary)]"
+                placeholder="Ej: tiene perro, llave debajo del tapete, prefiere los martes..."
+                value={internalNote}
+                onChange={e => setInternalNote(e.target.value)}
+              />
+              <button 
+                onClick={handleSaveNote}
+                disabled={savingNote || internalNote === client.notes}
+                className="w-full btn-primary flex items-center justify-center gap-2 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save className="w-4 h-4" />
+                {savingNote ? 'Guardando...' : 'Guardar nota'}
+              </button>
             </div>
           </section>
         </div>

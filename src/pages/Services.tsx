@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Trash2,
   Info,
-  FileText
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -41,6 +42,7 @@ interface Service {
 interface Client {
   id: string;
   name: string;
+  notes?: string;
 }
 
 interface Employee {
@@ -92,7 +94,7 @@ export default function Services() {
       // Fetch Clients for the dropdown
       const { data: clientsData } = await supabase
         .from('clients')
-        .select('id, name')
+        .select('id, name, notes')
         .eq('business_id', business.id)
         .eq('active', true)
         .order('name');
@@ -339,6 +341,16 @@ export default function Services() {
         title="Registrar Nuevo Trabajo"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          {formData.client_id && clients.find(c => c.id === formData.client_id)?.notes && (
+            <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+              <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-[var(--warning)] uppercase tracking-widest">Nota del Cliente</p>
+                <p className="text-sm text-[var(--text-primary)]">{clients.find(c => c.id === formData.client_id)?.notes}</p>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
               <Users className="w-4 h-4" /> Cliente

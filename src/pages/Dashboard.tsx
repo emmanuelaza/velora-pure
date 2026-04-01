@@ -11,7 +11,8 @@ import {
   CheckCircle2,
   FileText,
   Zap,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -57,7 +58,7 @@ export default function Dashboard() {
   
   // New State variables
   const [fastServiceOpen, setFastServiceOpen] = useState(false);
-  const [allClients, setAllClients] = useState<{id: string, name: string}[]>([]);
+  const [allClients, setAllClients] = useState<{id: string, name: string, notes?: string}[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<{id: string, name: string}[]>([]);
   const [fastServiceData, setFastServiceData] = useState({ client_id: '', amount: '', status: 'pending' as 'pending' | 'paid', assigned_employee_id: '' });
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -94,7 +95,7 @@ export default function Dashboard() {
       ]);
 
       const { count: totalServicesCount } = await supabase.from('services').select('id', { count: 'exact', head: true }).eq('business_id', business.id);
-      const { data: clientsData } = await supabase.from('clients').select('id, name').eq('business_id', business.id).eq('active', true);
+      const { data: clientsData } = await supabase.from('clients').select('id, name, notes').eq('business_id', business.id).eq('active', true);
       const { data: employeesData } = await supabase.from('employees').select('id, name').eq('business_id', business.id).eq('is_active', true);
       setAllClients(clientsData || []);
       setActiveEmployees(employeesData || []);
@@ -457,8 +458,18 @@ export default function Dashboard() {
       </div>
 
       {/* Fast Service Modal */}
-      <Modal isOpen={fastServiceOpen} onClose={() => setFastServiceOpen(false)} title="⚡ Registro Rápido">
+      <Modal isOpen={fastServiceOpen} onClose={() => setFastServiceOpen(false)} title="Servicio Rápido">
         <form onSubmit={handleFastService} className="space-y-4">
+          {fastServiceData.client_id && allClients.find(c => c.id === fastServiceData.client_id)?.notes && (
+            <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+              <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-[var(--warning)] uppercase tracking-widest">Nota del Cliente</p>
+                <p className="text-sm text-[var(--text-primary)]">{allClients.find(c => c.id === fastServiceData.client_id)?.notes}</p>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Cliente</label>
             <select 
