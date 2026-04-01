@@ -10,11 +10,10 @@ import {
   LogOut, 
   Menu, 
   X,
-  CreditCard
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
-import { cn, daysUntil } from '../lib/utils';
+import { cn } from '../lib/utils';
 
 export default function Layout() {
   const { user, signOut } = useAuth();
@@ -36,8 +35,6 @@ export default function Layout() {
     { icon: Settings, label: 'Configuración', path: '/settings' },
   ];
 
-  const trialDays = business?.trial_ends_at ? daysUntil(business.trial_ends_at) : 0;
-  const showTrialBanner = business?.subscription_status === 'trial';
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col md:flex-row">
@@ -115,13 +112,6 @@ export default function Layout() {
 
       {/* Main Content Area */}
       <main className="flex-1 transition-all overflow-x-hidden">
-        {showTrialBanner && (
-          <div className="bg-[var(--warning)] text-black font-semibold text-center py-2 text-sm flex items-center justify-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            <span>🕐 Tu prueba gratis termina en {trialDays} {trialDays === 1 ? 'día' : 'días'} ·</span>
-            <NavLink to="/billing" className="underline hover:opacity-80">Activar plan →</NavLink>
-          </div>
-        )}
         <div className="p-4 md:p-8">
           <Outlet />
         </div>

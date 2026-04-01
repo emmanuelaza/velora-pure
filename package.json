@@ -19,7 +19,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^5.0.0",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
     "@supabase/supabase-js": "^2.48.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

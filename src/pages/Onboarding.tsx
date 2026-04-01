@@ -51,8 +51,7 @@ export default function Onboarding() {
         zelle_info: formData.zelle,
         venmo_info: formData.venmo,
         cashapp_info: formData.cashapp,
-        subscription_status: 'trial',
-        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        subscription_status: 'pending',
       }).select().single();
 
       if (error) throw error;
@@ -234,10 +233,10 @@ export default function Onboarding() {
               <div className="bg-[#111] p-6 rounded-xl border border-[#2A2A2A] text-left mb-8">
                 <div className="flex items-center gap-2 text-[#00C896] mb-2 font-semibold">
                   <Check className="w-5 h-5" />
-                  <span>Suscripción Trial Activada</span>
+                  <span>Configuración Completa</span>
                 </div>
                 <p className="text-sm text-[#888888]">
-                  Tienes 14 días para probar todas las funciones de Velora Pure gratis.
+                  Tu cuenta ha sido creada exitosamente. Activa tu plan en la sección de suscripción para empezar a trabajar.
                 </p>
               </div>
             </div>
