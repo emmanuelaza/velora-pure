@@ -32,6 +32,7 @@ export default function Layout() {
     { icon: ClipboardList, label: 'Servicios', path: '/services' },
     { icon: AlertCircle, label: 'Cobros pendientes', path: '/pending', badge: true },
     { icon: Calendar, label: 'Agenda', path: '/schedule' },
+    { icon: Users, label: 'Empleados', path: '/employees' },
     { icon: Settings, label: 'Configuración', path: '/settings' },
   ];
 

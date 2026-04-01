@@ -12,6 +12,7 @@ import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
 import Billing from './pages/Billing';
 import ResetPassword from './pages/ResetPassword';
+import Employees from './pages/Employees';
 import Layout from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
@@ -65,6 +66,7 @@ export default function App() {
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/billing" element={<Billing />} />
+        <Route path="/employees" element={<Employees />} />
       </Route>
 
       {/* Fallback */}

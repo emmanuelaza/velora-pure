@@ -57,8 +57,9 @@ export default function Dashboard() {
   
   // New State variables
   const [fastServiceOpen, setFastServiceOpen] = useState(false);
-  const [fastServiceData, setFastServiceData] = useState({ client_id: '', amount: '', status: 'pending' as 'pending' | 'paid' });
   const [allClients, setAllClients] = useState<{id: string, name: string}[]>([]);
+  const [activeEmployees, setActiveEmployees] = useState<{id: string, name: string}[]>([]);
+  const [fastServiceData, setFastServiceData] = useState({ client_id: '', amount: '', status: 'pending' as 'pending' | 'paid', assigned_employee_id: '' });
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [showSmartBanner, setShowSmartBanner] = useState(false);
   const [smartBannerCount, setSmartBannerCount] = useState(0);
@@ -94,7 +95,9 @@ export default function Dashboard() {
 
       const { count: totalServicesCount } = await supabase.from('services').select('id', { count: 'exact', head: true }).eq('business_id', business.id);
       const { data: clientsData } = await supabase.from('clients').select('id, name').eq('business_id', business.id).eq('active', true);
+      const { data: employeesData } = await supabase.from('employees').select('id, name').eq('business_id', business.id).eq('is_active', true);
       setAllClients(clientsData || []);
+      setActiveEmployees(employeesData || []);
 
       const totalCobrado = (cobradoData || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
       const totalPendiente = (pendienteData || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -191,11 +194,12 @@ export default function Dashboard() {
         amount: Number(fastServiceData.amount),
         date: new Date().toISOString().split('T')[0],
         status: fastServiceData.status,
+        assigned_employee_id: fastServiceData.assigned_employee_id || null,
       });
       if (error) throw error;
       toast.success('Servicio rápido registrado');
       setFastServiceOpen(false);
-      setFastServiceData({ client_id: '', amount: '', status: 'pending' });
+      setFastServiceData({ client_id: '', amount: '', status: 'pending', assigned_employee_id: '' });
       fetchDashboardData();
     } catch (err: any) {
       // Offline fallback queue
@@ -205,12 +209,13 @@ export default function Dashboard() {
         client_id: fastServiceData.client_id,
         amount: Number(fastServiceData.amount),
         date: new Date().toISOString().split('T')[0],
-        status: fastServiceData.status
+        status: fastServiceData.status,
+        assigned_employee_id: fastServiceData.assigned_employee_id || null,
       });
       localStorage.setItem(`offline_queue_${business.id}`, JSON.stringify(queue));
       toast.success('Guardado sin conexión. Se sincronizará luego.');
       setFastServiceOpen(false);
-      setFastServiceData({ client_id: '', amount: '', status: 'pending' });
+      setFastServiceData({ client_id: '', amount: '', status: 'pending', assigned_employee_id: '' });
       fetchDashboardData();
     }
   };
@@ -476,6 +481,17 @@ export default function Dashboard() {
               value={fastServiceData.amount}
               onChange={e => setFastServiceData({...fastServiceData, amount: e.target.value})}
             />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Empleado Asignado (Opcional)</label>
+            <select 
+              className="input-field w-full"
+              value={fastServiceData.assigned_employee_id}
+              onChange={e => setFastServiceData({...fastServiceData, assigned_employee_id: e.target.value})}
+            >
+              <option value="">Sin asignar</option>
+              {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+            </select>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Estado de Pago</label>

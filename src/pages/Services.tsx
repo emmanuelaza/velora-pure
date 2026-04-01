@@ -33,9 +33,17 @@ interface Service {
   clients: {
     name: string;
   };
+  employees?: {
+    name: string;
+  };
 }
 
 interface Client {
+  id: string;
+  name: string;
+}
+
+interface Employee {
   id: string;
   name: string;
 }
@@ -45,6 +53,7 @@ export default function Services() {
   const location = useLocation();
   const [services, setServices] = useState<Service[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [activeEmployees, setActiveEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -59,6 +68,7 @@ export default function Services() {
     amount: '',
     date: new Date().toISOString().split('T')[0],
     status: 'pending' as 'paid' | 'pending',
+    assigned_employee_id: '',
     notes: ''
   });
 
@@ -87,14 +97,23 @@ export default function Services() {
         .eq('active', true)
         .order('name');
       
+      const { data: employeesData } = await supabase
+        .from('employees')
+        .select('id, name')
+        .eq('business_id', business.id)
+        .eq('is_active', true)
+        .order('name');
+      
       setClients(clientsData || []);
+      setActiveEmployees(employeesData || []);
 
       // Fetch Services
       let query = supabase
         .from('services')
         .select(`
           *,
-          clients(name)
+          clients(name),
+          employees(name)
         `)
         .eq('business_id', business.id)
         .order('date', { ascending: false });
@@ -122,6 +141,7 @@ export default function Services() {
         amount: Number(formData.amount),
         date: formData.date,
         status: formData.status,
+        assigned_employee_id: formData.assigned_employee_id || null,
         notes: formData.notes
       });
 
@@ -134,6 +154,7 @@ export default function Services() {
         amount: '',
         date: new Date().toISOString().split('T')[0],
         status: 'pending',
+        assigned_employee_id: '',
         notes: ''
       });
       fetchData();
@@ -257,6 +278,7 @@ export default function Services() {
                 <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
                   <th className="px-6 py-4 section-title">Cliente</th>
                   <th className="px-6 py-4 section-title">Fecha</th>
+                  <th className="px-6 py-4 section-title">Empleado</th>
                   <th className="px-6 py-4 section-title text-right">Monto</th>
                   <th className="px-6 py-4 section-title">Estado</th>
                   <th className="px-6 py-4 section-title text-right">Acciones</th>
@@ -269,6 +291,13 @@ export default function Services() {
                       <p className="font-bold text-[var(--text-primary)]">{s.clients?.name}</p>
                     </td>
                     <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{formatDate(s.date)}</td>
+                    <td className="px-6 py-4">
+                      {s.employees ? (
+                        <span className="text-sm font-medium text-[var(--accent)]">{s.employees.name}</span>
+                      ) : (
+                        <span className="text-sm text-[var(--text-secondary)]">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 amount text-right text-[var(--text-primary)]">{formatCurrency(s.amount)}</td>
                     <td className="px-6 py-4">
                       <StatusBadge status={s.status} />
@@ -381,6 +410,22 @@ export default function Services() {
                 <CheckCircle2 className="w-4 h-4" /> Pagado
               </button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
+              <Users className="w-4 h-4" /> Empleado Asignado (Opcional)
+            </label>
+            <select 
+              className="input-field w-full"
+              value={formData.assigned_employee_id}
+              onChange={e => setFormData({...formData, assigned_employee_id: e.target.value})}
+            >
+              <option value="">Sin asignar</option>
+              {activeEmployees.map(e => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
