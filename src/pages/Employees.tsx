@@ -228,7 +228,7 @@ export default function Employees() {
 
       const { data, error } = await supabase
         .from('scheduled_services')
-        .select('*, clients(name, address)')
+        .select('*, clients(name, address), service_packages(name)')
         .eq('assigned_employee_id', employeeId)
         .eq('status', 'scheduled')
         .gte('scheduled_date', start.toISOString().split('T')[0])
@@ -263,16 +263,24 @@ export default function Employees() {
       Object.entries(grouped).forEach(([date, services]) => {
         msg += `📅 ${date.charAt(0).toUpperCase() + date.slice(1)}:\n`;
         services.forEach((s, sIdx) => {
-          msg += `${sIdx + 1}️⃣ ${s.scheduled_time || ''} — ${s.service_type || 'Limpieza'}\n👤 ${s.clients?.name}\n📍 ${s.clients?.address || 'Sin dirección'}\n\n`;
+          const clientName = s.clients?.name || 'Cliente sin nombre';
+          const clientAddress = s.clients?.address || 'Sin dirección';
+          const time = s.scheduled_time ? s.scheduled_time.substring(0, 5) : 'Sin hora';
+          const type = s.service_packages ? s.service_packages.name : (s.service_type || 'Limpieza');
+          msg += `${sIdx + 1}️⃣ ${time} — ${type}\n👤 ${clientName}\n📍 ${clientAddress}\n\n`;
         });
       });
     } else {
       waServices.forEach((s, idx) => {
-        msg += `${idx + 1}️⃣ ${s.scheduled_time || ''} — ${s.service_type || 'Limpieza'}\n👤 ${s.clients?.name}\n📍 ${s.clients?.address || 'Sin dirección'}\n\n`;
+        const clientName = s.clients?.name || 'Cliente sin nombre';
+        const clientAddress = s.clients?.address || 'Sin dirección';
+        const time = s.scheduled_time ? s.scheduled_time.substring(0, 5) : 'Sin hora';
+        const type = s.service_packages ? s.service_packages.name : (s.service_type || 'Limpieza');
+        msg += `${idx + 1}️⃣ ${time} — ${type}\n👤 ${clientName}\n📍 ${clientAddress}\n\n`;
       });
     }
 
-    msg += `Total: ${waServices.length} servicio(s)\nCualquier duda me avisas 💪\n— ${business?.business_name}`;
+    msg += `Total: ${waServices.length} servicio(s)\nCualquier duda me avisas 💪\n— ${business?.business_name || 'La empresa'}`;
     return msg;
   };
 
