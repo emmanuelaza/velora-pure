@@ -285,9 +285,9 @@ export default function Dashboard() {
 
       {/* Onboarding Checklist */}
       {showOnboarding && stats && (
-        <Card variant="elevated" padding="lg" className="border-[var(--accent)]/30">
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">¡Bienvenido a Velora Pure! 🚀</h2>
-          <p className="text-[var(--text-secondary)] text-sm mb-6">Completa estos 3 pasos para empezar:</p>
+        <Card variant="elevated" padding="lg" className="border-[var(--accent)]/30 backdrop-blur-sm">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2 uppercase tracking-tight">¡Bienvenido a Velora Pure! 🚀</h2>
+          <p className="text-[var(--text-secondary)] text-sm mb-6 font-medium">Completa estos 3 pasos para empezar:</p>
           
           <div className="space-y-5">
             <div className="flex items-center justify-between">

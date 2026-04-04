@@ -52,10 +52,7 @@ export function ConfirmDialog({
               onClose();
             }}
             variant={danger ? "danger" : "primary"}
-            className={cn(
-              "flex-1 h-12 font-bold",
-              danger && "bg-[var(--danger)] hover:bg-[var(--danger)]/90 shadow-xl shadow-[var(--danger)]/20"
-            )}
+            className="flex-1 h-12"
           >
             {confirmLabel}
           </Button>

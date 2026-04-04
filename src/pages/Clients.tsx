@@ -162,19 +162,19 @@ export default function Clients() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map(client => (
-            <Card key={client.id} padding="md" className="group flex flex-col h-full relative border-[var(--border)] hover:border-[var(--accent)]/30">
+            <Card key={client.id} variant="elevated" padding="md" className="group flex flex-col h-full relative border-[var(--border)] hover:border-[var(--accent)]/30 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] cursor-pointer" onClick={() => navigate(`/clients/${client.id}`)}>
               <div className="flex items-start justify-between mb-5">
                 <div 
-                  className="w-12 h-12 rounded-[14px] flex items-center justify-center font-bold text-lg"
+                  className="w-12 h-12 rounded-[14px] flex items-center justify-center font-bold text-lg ring-1 ring-white/5"
                   style={{ backgroundColor: `${avatarColor(client.name)}20`, color: avatarColor(client.name) }}
                 >
                   {getInitials(client.name)}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="p-2 h-9 w-9"
+                    className="p-2 h-9 w-9 bg-[var(--bg-secondary)]/50"
                     onClick={() => {
                       setEditingClient(client);
                       setIsModalOpen(true);
@@ -185,7 +185,7 @@ export default function Clients() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="p-2 h-9 w-9 text-[var(--danger)] hover:bg-[var(--danger)]/10"
+                    className="p-2 h-9 w-9 text-[var(--danger)] hover:bg-[var(--danger)]/10 bg-[var(--bg-secondary)]/50"
                     onClick={() => {
                       setClientToDelete(client.id);
                       setIsConfirmOpen(true);
@@ -282,9 +282,9 @@ function FilterButton({ label, active, onClick }: { label: string, active: boole
     <button 
       onClick={onClick}
       className={cn(
-        "px-5 py-2 rounded-[10px] text-sm font-semibold transition-all",
+        "px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200",
         active 
-          ? "bg-[var(--accent)] text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)]" 
+          ? "bg-[var(--accent)] text-white shadow-[0_4px_16px_rgba(139,92,246,0.4)] translate-y-[-1px]" 
           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
       )}
     >

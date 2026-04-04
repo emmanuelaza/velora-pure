@@ -19,7 +19,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const sizes = {
       sm: 'px-3 py-1.5 text-xs',
-      md: 'px-4 py-2.5 text-sm',
+      md: 'px-4 py-2.5 text-sm', // 10px padding roughly
       lg: 'px-6 py-3.5 text-base',
     };
 
@@ -35,8 +35,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-        {children}
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="opacity-70">Cargando...</span>
+          </>
+        ) : (
+          children
+        )}
       </button>
     );
   }

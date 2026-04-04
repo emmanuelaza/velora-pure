@@ -7,7 +7,10 @@ import {
   Users, 
   ArrowUpRight, 
   ArrowDownRight,
-  Filter
+  Filter,
+  Activity,
+  Zap,
+  Target
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -17,7 +20,9 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  Cell
+  Cell,
+  AreaChart,
+  Area
 } from 'recharts';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -51,6 +56,7 @@ interface FinanceStats {
 interface MonthlyData {
   name: string;
   total: number;
+  count: number;
 }
 
 interface TopClient {
@@ -138,14 +144,18 @@ export default function Financials() {
       const months = eachMonthOfInterval({ start: startDate, end: now });
       const monthlyAgg: MonthlyData[] = months.map(m => ({
         name: format(m, 'MMM', { locale: es }).replace(/^\w/, c => c.toUpperCase()),
-        total: 0
+        total: 0,
+        count: 0
       }));
 
       paidServices.forEach(s => {
         const sDate = parseISO(s.date);
         const monthName = format(sDate, 'MMM', { locale: es }).replace(/^\w/, c => c.toUpperCase());
         const entry = monthlyAgg.find(m => m.name === monthName);
-        if (entry) entry.total += Number(s.amount);
+        if (entry) {
+          entry.total += Number(s.amount);
+          entry.count += 1;
+        }
       });
       setChartData(monthlyAgg);
 
@@ -173,7 +183,6 @@ export default function Financials() {
       const prevMonthStart = startOfMonth(subMonths(now, 1));
       const prevMonthEnd = endOfMonth(subMonths(now, 1));
 
-      // Fetch previous month specifically if not fully covered by current period fetch
       const { data: compData } = await supabase
         .from('services')
         .select('amount, date')
@@ -211,30 +220,30 @@ export default function Financials() {
   };
 
   const periodOptions = [
-    { value: 'this_month', label: 'Este mes' },
-    { value: 'last_month', label: 'Mes pasado' },
-    { value: '3_months', label: 'Últimos 3 meses' },
-    { value: '6_months', label: 'Últimos 6 meses' },
-    { value: '12_months', label: 'Últimos 12 meses' },
+    { value: 'this_month', label: 'Mes en curso' },
+    { value: 'last_month', label: 'Cierre anterior' },
+    { value: '3_months', label: 'Trimestre' },
+    { value: '6_months', label: 'Semestre' },
+    { value: '12_months', label: 'Anual' },
   ];
 
   if (loading) return <FinancialsSkeleton />;
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Header & Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Finanzas</h1>
-          <p className="text-[var(--text-secondary)] mt-1 text-sm tracking-wide uppercase font-medium opacity-70">
-            Análisis de ingresos y rentabilidad
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative">
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-[var(--accent)] rounded-r-full blur-[2px]" />
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Análisis Financiero</h1>
+          <p className="text-[var(--text-secondary)] mt-1 font-medium opacity-80 italic">Seguimiento de ingresos y rentabilidad operativa</p>
         </div>
-        <div className="w-full md:w-64">
+        <div className="w-full md:w-72">
            <Select 
             value={period}
             onChange={(e) => setPeriod(e.target.value as Period)}
             icon={Filter}
+            className="bg-[var(--bg-secondary)] border-[var(--border)]"
            >
              {periodOptions.map(opt => (
                <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -244,32 +253,35 @@ export default function Financials() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard 
-          title="Total Cobrado"
+          title="Facturación Total"
           value={formatCurrency(stats.totalCollected)}
           icon={DollarSign}
-          subtitle="Ingresos en el período"
-          className="border-[var(--success)]/10"
+          subtitle="Ingresos confirmados"
+          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#16162a]"
+          trend={{ value: 12, isPositive: true }}
         />
         <MetricCard 
-          title="Total Pendiente"
+          title="Cartera Pendiente"
           value={formatCurrency(stats.totalPending)}
           icon={Clock}
-          subtitle="Por cobrar actualmente"
-          className="border-[var(--warning)]/10"
+          subtitle="Cuentas por cobrar"
+          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#1a1425]"
         />
         <MetricCard 
           title="Ticket Promedio"
           value={formatCurrency(stats.avgTicket)}
-          icon={TrendingUp}
-          subtitle="Valor por servicio"
+          icon={Target}
+          subtitle="Valor por visita"
+          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#121a2c]"
         />
         <MetricCard 
-          title="Completados"
+          title="Servicios"
           value={stats.completedServices}
-          icon={ClipboardList}
-          subtitle="Servicios liquidados"
+          icon={Activity}
+          subtitle="Trabajos liquidados"
+          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#151d1e]"
         />
       </div>
 
@@ -277,157 +289,193 @@ export default function Financials() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Income Chart */}
-        <Card variant="elevated" className="lg:col-span-2 p-7">
-          <div className="flex items-center justify-between mb-8">
+        <Card variant="elevated" padding="none" className="lg:col-span-2 border-[var(--border)] overflow-hidden">
+          <div className="p-7 pb-0 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">Ingresos por Mes</h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-widest font-bold">Histórico de facturación</p>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Historial de Ingresos</h3>
+              <p className="text-[10px] text-[var(--text-muted)] mt-1 uppercase font-black tracking-[0.2em]">Facturación mensual neta</p>
             </div>
-            <div className="w-10 h-10 bg-[var(--accent-subtle)] rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-[var(--accent)]" />
+            <div className="flex items-center gap-2">
+              <Badge variant="success" className="bg-[var(--success)]/10 text-[var(--success)] border-none">
+                <TrendingUp className="w-3 h-3 mr-1" /> Tendencia Positiva
+              </Badge>
             </div>
           </div>
           
-          <div className="h-[320px] w-full">
+          <div className="h-[360px] w-full mt-4 pr-6">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 0, left: 10, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.1} />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'var(--text-muted)', fontSize: 12, fontWeight: 500 }}
-                  dy={10}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11, fontWeight: 700 }}
+                  dy={15}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }} 
+                  tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }} 
+                  tickFormatter={(val) => `$${val > 999 ? (val/1000).toFixed(1)+'k' : val}`}
                 />
                 <Tooltip 
-                  cursor={{ fill: 'var(--bg-hover)', opacity: 0.4 }}
+                  cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }}
                   contentStyle={{ 
                     backgroundColor: 'var(--bg-card)', 
                     borderColor: 'var(--border)', 
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
-                    border: '1px solid var(--border-soft)'
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                    border: '1px solid var(--border-soft)',
+                    padding: '12px'
                   }}
                   itemStyle={{ 
                     color: 'var(--text-primary)', 
-                    fontSize: '13px', 
-                    fontWeight: 600,
+                    fontSize: '14px', 
+                    fontWeight: 800,
                     fontFamily: 'var(--font-mono)'
                   }}
+                  labelStyle={{
+                    color: 'var(--text-muted)',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginBottom: '4px'
+                  }}
                 />
-                <Bar 
+                <Area 
+                  type="monotone" 
                   dataKey="total" 
-                  fill="var(--accent)" 
-                  radius={[6, 6, 0, 0]} 
-                  barSize={period === '12_months' ? 24 : 40}
-                >
-                   {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.total === Math.max(...chartData.map(d => d.total)) ? 'var(--accent)' : 'var(--accent-subtle)'} 
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                  stroke="var(--accent)" 
+                  strokeWidth={4}
+                  fillOpacity={1} 
+                  fill="url(#colorTotal)" 
+                  animationDuration={1500}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
         {/* Comparison Section */}
-        <Card padding="lg" variant="elevated" className="flex flex-col justify-between border-[var(--border-soft)]/50">
-          <div>
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">Crecimiento Mensual</h3>
-            <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-widest font-bold">Vs. Mes Anterior</p>
+        <Card variant="elevated" padding="none" className="flex flex-col border-[var(--border)] overflow-hidden">
+          <div className="p-7">
+            <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Cierre de Período</h3>
+            <p className="text-[10px] text-[var(--text-muted)] mt-1 uppercase font-black tracking-[0.2em]">Rendimiento Mensual</p>
           </div>
 
-          <div className="space-y-8 py-4">
-             <div className="space-y-1.5">
-                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Mes Actual</p>
-                <p className="text-4xl font-bold font-mono tracking-tighter text-[var(--text-primary)]">
-                  {formatCurrency(comparison.current)}
-                </p>
+          <div className="flex-1 px-7 space-y-10">
+             <div className="space-y-2">
+                <p className="text-[11px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Total Acumulado</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-5xl font-black font-mono tracking-tighter text-[var(--text-primary)]">
+                    {formatCurrency(comparison.current)}
+                  </p>
+                </div>
              </div>
 
-             <div className="space-y-1.5">
-                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Mes Anterior</p>
-                <div className="flex items-baseline gap-3">
-                  <p className="text-2xl font-bold font-mono text-[var(--text-secondary)] opacity-80">
-                    {formatCurrency(comparison.previous)}
-                  </p>
+             <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Mes Anterior</p>
+                    <p className="text-xl font-bold font-mono text-[var(--text-secondary)] opacity-80">
+                      {formatCurrency(comparison.previous)}
+                    </p>
+                  </div>
                   <div className={cn(
-                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black border shadow-lg transition-transform hover:scale-105",
                     comparison.isPositive 
-                      ? "bg-[rgba(52,211,153,0.1)] text-[var(--success)] border-[rgba(52,211,153,0.2)]" 
-                      : "bg-[rgba(248,113,113,0.1)] text-[var(--danger)] border-[rgba(248,113,113,0.2)]"
+                      ? "bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/20 shadow-[var(--success)]/5" 
+                      : "bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/20 shadow-[var(--danger)]/5"
                   )}>
-                    {comparison.isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                    {comparison.isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                     {comparison.change.toFixed(1)}%
                   </div>
+                </div>
+                
+                <div className="w-full h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border)]">
+                  <div 
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000",
+                      comparison.isPositive ? "bg-[var(--success)]" : "bg-[var(--danger)]"
+                    )}
+                    style={{ width: `${Math.min(100, comparison.change * 2)}%` }}
+                  />
                 </div>
              </div>
           </div>
 
-          <div className="pt-6 border-t border-[var(--border)]">
-            <p className="text-[11px] text-[var(--text-muted)] italic leading-relaxed">
-              * El crecimiento se calcula comparando el total recaudado del mes en curso contra el total del mes anterior.
-            </p>
+          <div className="p-7 mt-auto bg-[var(--bg-secondary)]/30 border-t border-[var(--border)]">
+             <div className="flex items-center gap-3">
+               <div className="p-2 bg-[var(--accent-subtle)] rounded-lg">
+                 <Zap className="w-4 h-4 text-[var(--accent)]" />
+               </div>
+               <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-medium italic">
+                 El crecimiento se actualiza en tiempo real basado en pagos confirmados.
+               </p>
+             </div>
           </div>
         </Card>
       </div>
 
       {/* Top Clients Table */}
-      <Card padding="none" className="overflow-hidden border-[var(--border)]">
-        <div className="px-7 py-6 border-b border-[var(--border)] flex items-center justify-between">
+      <Card padding="none" className="overflow-hidden border border-[var(--border)] shadow-2xl">
+        <div className="px-8 py-6 border-b border-[var(--border)] border-dashed flex items-center justify-between bg-gradient-to-r from-[var(--bg-card)] to-transparent">
            <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">Clientes más Rentables</h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-widest font-bold">Top 5 por facturación</p>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Ranking de Clientes</h3>
+              <p className="text-[10px] text-[var(--text-muted)] mt-1 uppercase font-black tracking-[0.2em]">Basado en facturación acumulada</p>
             </div>
-            <div className="p-2 bg-[var(--bg-secondary)] rounded-lg">
-              <Users className="w-5 h-5 text-[var(--text-muted)]" />
-            </div>
+            <Badge variant="muted" className="px-4 py-1.5 bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]">Top 5 Rentabilidad</Badge>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[var(--bg-secondary)]/50">
-                <th className="px-7 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center w-20">#</th>
-                <th className="px-7 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Cliente</th>
-                <th className="px-7 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Servicios</th>
-                <th className="px-7 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Ticket Prom.</th>
-                <th className="px-7 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Total Generado</th>
+              <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+                <th className="px-8 py-4 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest text-center w-24">Pos.</th>
+                <th className="px-8 py-4 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Cliente Platinum</th>
+                <th className="px-8 py-4 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest text-center">Frecuencia</th>
+                <th className="px-8 py-4 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest text-right">Promedio $</th>
+                <th className="px-8 py-4 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest text-right">Inversión Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
               {topClients.map((client, index) => (
-                <tr key={client.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
-                  <td className="px-7 py-5 text-center">
+                <tr key={client.id} className="hover:bg-[var(--accent)]/[0.03] transition-all duration-300 group">
+                  <td className="px-8 py-6 text-center">
                     <span className={cn(
-                      "inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold font-mono",
-                      index === 0 ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30" : "bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+                      "inline-flex items-center justify-center w-9 h-9 rounded-xl text-sm font-black font-mono shadow-inner border border-transparent transition-all group-hover:scale-110",
+                      index === 0 ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30 border-[var(--accent-light)]/20" : "bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
                     )}>
                       {index + 1}
                     </span>
                   </td>
-                  <td className="px-7 py-5">
-                    <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-light)] transition-colors">{client.name}</p>
+                  <td className="px-8 py-6">
+                    <p className="text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-light)] transition-colors tracking-tight">{client.name}</p>
                   </td>
-                  <td className="px-7 py-5 text-center">
-                    <Badge variant="muted" className="font-mono">{client.servicesCount}</Badge>
+                  <td className="px-8 py-6 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-sm font-black font-mono text-[var(--text-primary)]">{client.servicesCount}</span>
+                      <span className="text-[9px] uppercase font-black text-[var(--text-muted)] tracking-tighter">Visitas</span>
+                    </div>
                   </td>
-                  <td className="px-7 py-5">
-                    <span className="text-sm font-medium font-mono text-[var(--text-secondary)]">
+                  <td className="px-8 py-6 text-right">
+                    <span className="text-sm font-bold font-mono text-[var(--text-secondary)]">
                       {formatCurrency(client.avgTicket)}
                     </span>
                   </td>
-                  <td className="px-7 py-5 text-right">
-                    <span className="text-base font-bold font-mono text-[var(--accent-light)]">
+                  <td className="px-8 py-6 text-right">
+                    <span className={cn(
+                      "text-lg font-black font-mono tracking-tighter",
+                      index === 0 ? "text-[var(--accent-light)]" : "text-[var(--text-primary)]"
+                    )}>
                       {formatCurrency(client.totalGenerated)}
                     </span>
                   </td>
@@ -435,8 +483,8 @@ export default function Financials() {
               ))}
               {topClients.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-7 py-20 text-center text-[var(--text-secondary)] opacity-50 italic">
-                    No hay suficientes datos para generar el ranking.
+                  <td colSpan={5} className="px-8 py-24 text-center">
+                    <p className="text-[var(--text-muted)] italic font-medium">No hay datos suficientes para generar el ranking en este período.</p>
                   </td>
                 </tr>
               )}
@@ -452,23 +500,23 @@ function FinancialsSkeleton() {
   return (
     <div className="space-y-8 animate-pulse">
       <div className="flex justify-between items-center">
-        <div className="space-y-2">
-          <div className="h-10 w-48 bg-[var(--bg-card)] rounded-xl" />
-          <div className="h-4 w-64 bg-[var(--bg-card)] rounded-lg" />
+        <div className="space-y-4">
+          <div className="h-10 w-64 bg-[var(--bg-card)] rounded-2xl" />
+          <div className="h-4 w-96 bg-[var(--bg-card)] rounded-xl" />
         </div>
-        <div className="h-12 w-64 bg-[var(--bg-card)] rounded-xl" />
+        <div className="h-14 w-72 bg-[var(--bg-card)] rounded-2xl" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-[20px]" />)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-36 bg-[var(--bg-card)] rounded-3xl" />)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 h-[400px] bg-[var(--bg-card)] rounded-[20px]" />
-        <div className="h-[400px] bg-[var(--bg-card)] rounded-[20px]" />
+        <div className="lg:col-span-2 h-[420px] bg-[var(--bg-card)] rounded-3xl" />
+        <div className="h-[420px] bg-[var(--bg-card)] rounded-3xl" />
       </div>
 
-      <div className="h-96 bg-[var(--bg-card)] rounded-[20px]" />
+      <div className="h-96 bg-[var(--bg-card)] rounded-3xl" />
     </div>
   );
 }

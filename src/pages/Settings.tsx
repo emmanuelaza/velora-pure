@@ -10,7 +10,10 @@ import {
   MapPin,
   Loader2,
   Mail,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  Lock,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
@@ -55,7 +58,7 @@ export default function Settings() {
       if (error) throw error;
       
       await refetch();
-      toast.success('Configuración guardada correctamente');
+      toast.success('Configuración actualizada correctamente');
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -69,38 +72,43 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      <header>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Configuración</h1>
-        <p className="text-[var(--text-secondary)] mt-1.5">Personaliza tu cuenta y métodos de cobro</p>
+    <div className="space-y-10 max-w-6xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <header className="relative">
+        <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-[var(--accent)] rounded-r-full blur-[2px] opacity-70" />
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Configuración</h1>
+        <p className="text-[var(--text-secondary)] mt-1.5 font-medium italic opacity-80">Personaliza tu perfil operativo y métodos de recaudo</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         {/* Navigation Sidebar */}
-        <aside className="lg:col-span-3 space-y-2 sticky top-24">
-          <button className="w-full flex items-center justify-between group px-4 py-3 bg-[var(--accent-subtle)] text-[var(--accent-light)] rounded-xl font-bold border border-[var(--accent)]/20 shadow-lg shadow-[var(--accent)]/5 transition-all">
+        <aside className="lg:col-span-3 space-y-3 sticky top-24">
+          <button className="w-full flex items-center justify-between group px-5 py-4 bg-[var(--bg-secondary)] text-[var(--accent-light)] rounded-2xl font-bold border border-[var(--accent)]/30 shadow-[0_8px_32px_rgba(139,92,246,0.15)] transition-all">
             <div className="flex items-center gap-3">
-              <Building2 className="w-4 h-4" />
-              <span className="text-sm">Perfil y Negocio</span>
+              <div className="p-2 bg-[var(--accent)]/10 rounded-lg">
+                <Building2 className="w-4 h-4 text-[var(--accent)]" />
+              </div>
+              <span className="text-sm">Perfil del Negocio</span>
             </div>
             <ChevronRight className="w-4 h-4 opacity-50" />
           </button>
           
           <button 
             onClick={() => navigate('/billing')}
-            className="w-full flex items-center justify-between group px-4 py-3 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] rounded-xl transition-all"
+            className="w-full flex items-center justify-between group px-5 py-4 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] rounded-2xl transition-all border border-transparent hover:border-[var(--border)]"
           >
             <div className="flex items-center gap-3">
-              <ShieldCheck className="w-4 h-4" />
-              <span className="text-sm">Suscripción</span>
+              <div className="p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border)] group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)] transition-all">
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold">Suscripción</span>
             </div>
-            <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity" />
+            <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-all translate-x-[-10px] group-hover:translate-x-0" />
           </button>
 
-          <div className="pt-8 px-2">
+          <div className="pt-10 px-1 border-t border-[var(--border)] border-dashed mt-6">
             <button 
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-xl transition-all font-bold text-sm"
+              className="w-full flex items-center gap-3 px-5 py-4 text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-2xl transition-all font-black text-xs uppercase tracking-widest border border-transparent hover:border-[var(--danger)]/20"
             >
               <LogOut className="w-4 h-4" />
               <span>Cerrar sesión</span>
@@ -109,34 +117,40 @@ export default function Settings() {
         </aside>
 
         {/* Form Content */}
-        <div className="lg:col-span-9 space-y-8">
-          <form onSubmit={handleUpdate} className="space-y-8">
+        <div className="lg:col-span-9 space-y-10">
+          <form onSubmit={handleUpdate} className="space-y-10">
             
             {/* Section: Business Profile */}
-            <Card padding="lg" className="space-y-8 border-[var(--border-soft)]">
-              <div className="flex items-center gap-3 border-b border-[var(--border)-soft] pb-6 px-1">
-                <div className="p-2 bg-[var(--accent-subtle)] rounded-lg">
-                   <Building2 className="w-5 h-5 text-[var(--accent)]" />
-                </div>
-                <h3 className="text-lg font-bold text-[var(--text-primary)]">Perfil del Negocio</h3>
+            <Card variant="elevated" padding="none" className="border-[var(--border)] overflow-hidden shadow-2xl">
+              <div className="px-8 py-6 bg-gradient-to-r from-[var(--bg-secondary)]/50 to-transparent border-b border-[var(--border)] border-dashed flex items-center gap-4">
+                 <div className="p-2.5 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-xl">
+                    <Building2 className="w-5 h-5 text-[var(--accent)]" />
+                 </div>
+                 <div>
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Identidad Corporativa</h3>
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-[0.15em] mt-0.5">Información base de facturación</p>
+                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Input 
-                  label="Nombre de la Empresa" 
+                  label="Nombre Comercial" 
                   icon={Building2}
+                  placeholder="Ej: Velora Cleaning Co."
                   value={formData.business_name} 
                   onChange={e => setFormData({...formData, business_name: e.target.value})} 
                 />
                 <Input 
-                  label="Dueño / Administrador" 
+                  label="Representante Legal" 
                   icon={User}
+                  placeholder="Nombre del propietario"
                   value={formData.owner_name} 
                   onChange={e => setFormData({...formData, owner_name: e.target.value})} 
                 />
                 <Input 
-                  label="WhatsApp de Negocio" 
+                  label="WhatsApp para Notificaciones" 
                   icon={Phone}
+                  placeholder="+1 (000) 000-0000"
                   value={formData.phone} 
                   onChange={e => setFormData({...formData, phone: e.target.value})} 
                 />
@@ -144,11 +158,14 @@ export default function Settings() {
                   <Input 
                     label="Ciudad" 
                     icon={MapPin}
+                    placeholder="Miami"
                     value={formData.city} 
                     onChange={e => setFormData({...formData, city: e.target.value})} 
                   />
                    <Input 
                     label="Estado" 
+                    icon={Globe}
+                    placeholder="FL"
                     value={formData.state} 
                     onChange={e => setFormData({...formData, state: e.target.value})} 
                   />
@@ -157,33 +174,33 @@ export default function Settings() {
             </Card>
 
             {/* Section: Payment Hub */}
-            <Card padding="lg" className="space-y-8 border-[var(--border-soft)]">
-              <div className="flex items-center gap-3 border-b border-[var(--border)-soft] pb-6 px-1">
-                <div className="p-2 bg-[var(--success)]/10 rounded-lg">
+            <Card variant="elevated" padding="none" className="border-[var(--border)] overflow-hidden shadow-2xl">
+              <div className="px-8 py-6 bg-gradient-to-r from-[var(--success)]/[0.03] to-transparent border-b border-[var(--border)] border-dashed flex items-center gap-4">
+                <div className="p-2.5 bg-[var(--success)]/10 border border-[var(--success)]/20 rounded-xl">
                    <Wallet className="w-5 h-5 text-[var(--success)]" />
                 </div>
                 <div>
-                   <h3 className="text-lg font-bold text-[var(--text-primary)]">Pasarelas de Cobro</h3>
-                   <p className="text-xs text-[var(--text-muted)] mt-0.5">Visibles en tus recordatorios de WhatsApp</p>
+                   <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Canales de Recaudación</h3>
+                   <p className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-[0.15em] mt-0.5">Visibles en recordatorios automáticos</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Input 
-                  label="Zelle" 
-                  placeholder="Email o Teléfono"
+                  label="Zelle Pay" 
+                  placeholder="Email o Teléfono asociado"
                   value={formData.zelle_info} 
                   onChange={e => setFormData({...formData, zelle_info: e.target.value})} 
                 />
                 <Input 
-                  label="Venmo" 
-                  placeholder="Usuario"
+                  label="Venmo User" 
+                  placeholder="@usuario"
                   value={formData.venmo_info} 
                   onChange={e => setFormData({...formData, venmo_info: e.target.value})} 
                 />
                 <Input 
-                  label="CashApp" 
-                  placeholder="Usuario"
+                  label="Cash App" 
+                  placeholder="$Cashtag"
                   value={formData.cashapp_info} 
                   onChange={e => setFormData({...formData, cashapp_info: e.target.value})} 
                 />
@@ -191,30 +208,35 @@ export default function Settings() {
             </Card>
 
             {/* Section: Account & Security */}
-            <Card padding="lg" variant="subtle" className="bg-[var(--bg-card)]/30 border-[var(--border-soft)]">
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center border border-[var(--border)]">
-                    <Mail className="w-6 h-6 text-[var(--text-muted)]" />
+            <Card padding="none" variant="subtle" className="bg-[var(--bg-card)]/30 border-[var(--border)] border-dashed relative overflow-hidden group">
+              <div className="absolute top-[-20px] right-[-20px] opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Lock className="w-32 h-32 text-[var(--text-muted)]" />
+              </div>
+              <div className="p-8 flex items-center justify-between gap-6 relative z-10">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center border border-[var(--border)] shadow-inner">
+                    <Mail className="w-7 h-7 text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Email de Acceso</p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">{user?.email}</p>
+                    <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mb-1.5 flex items-center gap-2">
+                       <ShieldCheck className="w-3.5 h-3.5" /> Cuenta de Acceso
+                    </p>
+                    <p className="text-base font-bold text-[var(--text-primary)] tracking-tight">{user?.email}</p>
                   </div>
                 </div>
-                <Badge variant="muted" className="bg-[var(--bg-secondary)] font-bold">Inmutable</Badge>
+                <Badge variant="muted" className="bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-muted)] font-black text-[10px] uppercase tracking-widest px-4 py-1.5">No Editable</Badge>
               </div>
             </Card>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-6">
               <Button 
                 type="submit" 
-                disabled={loading}
+                loading={loading}
                 size="lg"
-                className="w-full md:w-auto min-w-[200px] h-14 shadow-xl shadow-[var(--accent)]/10"
+                className="w-full md:w-auto min-w-[240px] h-14 shadow-2xl shadow-[var(--accent)]/20 font-black uppercase tracking-[0.15em] text-xs"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Guardar Cambios
+                {!loading && <Save className="w-5 h-5" />}
+                Actualizar Configuración
               </Button>
             </div>
           </form>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Button } from './Button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -45,7 +44,7 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Overlay */}
       <div 
         className={cn(
-          "absolute inset-0 bg-[#080810]/80 backdrop-blur-md transition-opacity duration-200",
+          "absolute inset-0 bg-[#080816]/80 backdrop-blur-[8px] transition-opacity duration-200",
           isOpen ? "opacity-100" : "opacity-0"
         )}
         onClick={onClose}
@@ -61,23 +60,17 @@ export const Modal: React.FC<ModalProps> = ({
         style={{ maxWidth }}
       >
         {/* Header */}
-        {title && (
-          <div className="flex items-center justify-between px-7 py-6">
-            {title && (
-              <h3 className="text-[18px] font-semibold text-[var(--text-primary)]">
-                {title}
-              </h3>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClose}
-              className="p-1 -mr-2 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center justify-between px-7 py-6">
+          <h3 className="text-[18px] font-semibold text-[var(--text-primary)]">
+            {title || ' '}
+          </h3>
+          <button 
+            onClick={onClose}
+            className="p-1 -mr-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Content */}
         <div className="px-7 pb-8 pt-0">
@@ -95,3 +88,5 @@ export const Modal: React.FC<ModalProps> = ({
     document.body
   );
 };
+
+Modal.displayName = 'Modal';

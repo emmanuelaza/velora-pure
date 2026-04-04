@@ -14,7 +14,8 @@ import {
   FileText,
   Save,
   Users,
-  ClipboardList
+  ClipboardList,
+  TrendingUp
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -159,40 +160,43 @@ export default function ClientDetail() {
   if (!client) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex items-center gap-5">
           <Button 
             variant="secondary"
             size="sm"
             onClick={() => navigate('/clients')}
-            className="p-2 h-10 w-10 shrink-0"
+            className="p-2 h-11 w-11 shrink-0 bg-[var(--bg-secondary)] border-[var(--border)]"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div 
-            className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl shrink-0"
+            className="w-16 h-16 rounded-[20px] flex items-center justify-center font-bold text-2xl shrink-0 ring-1 ring-white/10"
             style={{ backgroundColor: `${avatarColor(client.name)}20`, color: avatarColor(client.name) }}
           >
             {getInitials(client.name)}
           </div>
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold text-[var(--text-primary)] truncate">{client.name}</h1>
-            <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)] mt-1.5 font-medium">
-              <Badge variant={client.active ? 'success' : 'muted'} className="px-2 py-0.5">
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] truncate tracking-tight">{client.name}</h1>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--text-secondary)] mt-2 font-medium">
+              <Badge variant={client.active ? 'success' : 'muted'}>
                 {client.active ? 'Activo' : 'Inactivo'}
               </Badge>
-              <span className="opacity-30">•</span>
-              <Phone className="w-4 h-4 opacity-70" />
-              {formatPhone(client.phone)}
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 opacity-70" />
+                <span>{formatPhone(client.phone)}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <Button 
+            size="lg"
             onClick={() => navigate('/services', { state: { clientId: client.id } })}
+            className="shadow-xl shadow-[var(--accent)]/20"
           >
             <Plus className="w-5 h-5" />
             Registrar Servicio
@@ -202,41 +206,41 @@ export default function ClientDetail() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard title="Total Generado" value={formatCurrency(totalGenerated)} icon={DollarSign} subtitle="Total Generado" />
-        <MetricCard title="Saldo Pendiente" value={formatCurrency(totalPending)} icon={Clock} subtitle="Saldo Pendiente" trend={totalPending > 0 ? { value: 100, isPositive: false } : undefined} />
-        <MetricCard title="Frecuencia" value={client.frequency} icon={Calendar} subtitle="Frecuencia" />
+        <MetricCard title="Total Generado" value={formatCurrency(totalGenerated)} icon={TrendingUp} />
+        <MetricCard title="Saldo Pendiente" value={formatCurrency(totalPending)} icon={Clock} trend={totalPending > 0 ? { value: 100, isPositive: false } : undefined} />
+        <MetricCard title="Frecuencia" value={client.frequency} icon={Calendar} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Info detail column */}
         <div className="lg:col-span-1 space-y-6">
-          <Card padding="lg" className="space-y-6">
+          <Card variant="elevated" padding="lg" className="space-y-6 border-[var(--border)]">
             <h3 className="font-bold text-lg text-[var(--text-primary)] border-b border-[var(--border)] pb-4 flex items-center gap-2">
                <Users className="w-5 h-5 text-[var(--accent)]" />
                Detalles del Cliente
             </h3>
-            <div className="space-y-5">
+            <div className="space-y-6">
               <InfoRow icon={MapPin} label="Dirección Principal" value={`${client.address}, ${client.city}, ${client.state}`} />
               <InfoRow icon={Phone} label="WhatsApp Business" value={formatPhone(client.phone)} />
               {client.notes && (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest px-1">Notas del Perfil</p>
-                  <div className="text-sm text-[var(--text-primary)] bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)] leading-relaxed">
-                    {client.notes}
+                  <div className="text-sm text-[var(--text-primary)] bg-[var(--bg-secondary)]/50 p-4 rounded-xl border border-[var(--border)] leading-relaxed italic border-dashed">
+                    "{client.notes}"
                   </div>
                 </div>
               )}
             </div>
           </Card>
 
-          <Card padding="lg" className="space-y-4">
+          <Card padding="lg" className="space-y-5">
             <h3 className="font-bold text-lg flex items-center gap-2 text-[var(--text-primary)]">
               <FileText className="w-5 h-5 text-[var(--accent)]" />
               Notas Internas
             </h3>
             <div className="space-y-4">
               <textarea 
-                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all h-32 resize-none"
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/15 transition-all h-32 resize-none"
                 placeholder="Escribe detalles privados sobre este cliente..."
                 value={internalNote}
                 onChange={e => setInternalNote(e.target.value)}
@@ -246,6 +250,7 @@ export default function ClientDetail() {
                 loading={savingNote}
                 disabled={internalNote === (client.notes || '')}
                 className="w-full"
+                variant="secondary"
               >
                 <Save className="w-4 h-4" />
                 Guardar cambios
@@ -271,31 +276,31 @@ export default function ClientDetail() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-[var(--bg-secondary)]/50 border-b border-[var(--border)]">
+                    <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
                       <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
                       <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Monto</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Estado</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Estado</th>
                       <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
                     {services.map((service) => (
                       <tr key={service.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
-                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{formatDate(service.date)}</td>
-                        <td className="px-6 py-4 text-sm font-bold font-mono text-[var(--text-primary)]">{formatCurrency(service.amount)}</td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-6 py-5 text-sm font-medium text-[var(--text-primary)]">{formatDate(service.date)}</td>
+                        <td className="px-6 py-5 text-sm font-bold font-mono text-[var(--text-primary)]">{formatCurrency(service.amount)}</td>
+                        <td className="px-6 py-5 text-sm text-center">
                           <Badge variant={service.status === 'paid' ? 'success' : 'warning'}>
                             {service.status === 'paid' ? 'Pagado' : 'Pendiente'}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <td className="px-6 py-5 text-right">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             {service.status === 'pending' && (
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => sendReminder(service)}
-                                className="text-[var(--success)] hover:bg-[var(--success)]/10 h-8 w-8 p-0"
+                                className="text-[var(--success)] hover:bg-[var(--success)]/10 h-9 w-9 p-0"
                                 title="Recordatorio WhatsApp"
                               >
                                 <MessageCircle className="w-4 h-4" />
@@ -306,10 +311,10 @@ export default function ClientDetail() {
                               size="sm" 
                               onClick={() => handleToggleStatus(service.id, service.status)}
                               className={cn(
-                                "h-8 w-8 p-0",
-                                service.status === 'pending' ? "text-[var(--success)]" : "text-[var(--text-muted)]"
+                                "h-9 w-9 p-0",
+                                service.status === 'pending' ? "text-[var(--success)] hover:bg-[var(--success)]/10" : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
                               )}
-                              title={service.status === 'paid' ? 'Pendiente' : 'Pagado'}
+                              title={service.status === 'paid' ? 'Marcar como pendiente' : 'Marcar como pagado'}
                             >
                               <CheckCircle2 className="w-4 h-4" />
                             </Button>
@@ -320,7 +325,7 @@ export default function ClientDetail() {
                                 setServiceToDelete(service.id);
                                 setIsConfirmOpen(true);
                               }}
-                              className="text-[var(--danger)] hover:bg-[var(--danger)]/10 h-8 w-8 p-0"
+                              className="text-[var(--danger)] hover:bg-[var(--danger)]/10 h-9 w-9 p-0"
                               title="Eliminar"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -352,13 +357,13 @@ export default function ClientDetail() {
 
 function InfoRow({ icon: Icon, label, value }: any) {
   return (
-    <div className="flex items-start gap-4">
-      <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] shrink-0">
+    <div className="flex items-start gap-4 group">
+      <div className="p-3 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] shrink-0 transition-colors group-hover:border-[var(--accent)]/30 group-hover:bg-[var(--bg-hover)]">
         <Icon className="w-4.5 h-4.5 text-[var(--accent)]" />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 pt-0.5">
         <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest">{label}</p>
-        <p className="text-sm font-semibold text-[var(--text-primary)] mt-1 leading-tight">{value}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)] mt-1.5 leading-tight">{value}</p>
       </div>
     </div>
   );
@@ -367,9 +372,9 @@ function InfoRow({ icon: Icon, label, value }: any) {
 function DetailSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
         <div className="w-12 h-12 bg-[var(--bg-card)] rounded-xl animate-pulse" />
-        <div className="w-48 h-10 bg-[var(--bg-card)] rounded-xl animate-pulse" />
+        <div className="w-64 h-12 bg-[var(--bg-card)] rounded-xl animate-pulse" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
@@ -378,7 +383,5 @@ function DetailSkeleton() {
         <div className="lg:col-span-1 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
         <div className="lg:col-span-2 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
       </div>
-    </div>
-  );
 }
 

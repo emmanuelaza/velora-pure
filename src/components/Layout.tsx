@@ -39,7 +39,7 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col md:flex-row font-sans antialiased text-[var(--text-primary)]">
       {/* Mobile TopBar */}
       <div className="md:hidden flex items-center justify-between h-16 px-4 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border)] sticky top-0 z-[100]">
         <button onClick={() => setIsDrawerOpen(true)} className="p-2 text-[var(--text-secondary)] hover:text-white transition-colors">
@@ -55,23 +55,22 @@ export default function Layout() {
           <Logo />
         </div>
 
-        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <NavItem key={item.path} item={item} />
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[var(--border)] space-y-4">
-          <div className="mx-2 p-4 bg-[var(--bg-card)] rounded-[16px] border border-[var(--border)] shadow-sm">
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1.5">Mi Negocio</p>
+        <div className="p-4 border-t border-[var(--border)] space-y-3">
+          <div className="mx-1 p-3 bg-[var(--bg-card)] rounded-[12px] border border-[var(--border)]">
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Negocio</p>
             <p className="text-sm font-semibold truncate text-[var(--text-primary)]">{business?.business_name}</p>
-            <p className="text-[11px] text-[var(--text-secondary)] truncate opacity-70 mt-0.5">{user?.email}</p>
           </div>
           <button 
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--danger)]/10 hover:text-[var(--danger)] transition-all group"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--danger)]/10 hover:text-[var(--danger)] transition-all group"
           >
-            <LogOut className="w-4.5 h-4.5 group-hover:-translate-x-0.5 transition-transform" />
+            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -115,16 +114,16 @@ export default function Layout() {
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 transition-all overflow-x-hidden">
         {/* Header Desktop */}
-        <header className="hidden md:flex items-center h-16 px-8 bg-[var(--bg-primary)]/70 backdrop-blur-xl border-b border-[var(--border)] sticky top-0 z-[90]">
+        <header className="hidden md:flex items-center h-16 px-8 bg-[var(--bg-primary)]/70 backdrop-blur-[12px] border-b border-[var(--border)] sticky top-0 z-[90]">
           <h2 className="text-sm font-semibold text-[var(--text-secondary)] tracking-tight">Velora Pure Management</h2>
           <div className="ml-auto flex items-center gap-4">
-             <div className="w-8 h-8 rounded-full bg-[var(--accent-subtle)] border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent-light)] font-bold text-xs">
+             <div className="w-8 h-8 rounded-full bg-[var(--accent-subtle)] border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent-light)] font-bold text-xs ring-1 ring-[var(--accent)]/20">
                 {user?.email?.[0].toUpperCase()}
              </div>
           </div>
         </header>
 
-        <div className="p-4 md:p-8 animate-in fade-in duration-500">
+        <div className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <Outlet />
         </div>
       </main>
@@ -138,15 +137,15 @@ function NavItem({ item, onClick }: { item: any, onClick?: () => void }) {
       to={item.path}
       onClick={onClick}
       className={({ isActive }) => cn(
-        "flex items-center justify-between w-full px-4 py-3 rounded-[10px] text-sm font-medium transition-all group relative",
+        "flex items-center justify-between w-full px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-150 group relative",
         isActive 
-          ? "bg-[var(--accent-subtle)] text-[var(--accent-light)] border-l-2 border-[var(--accent)] translate-x-1" 
+          ? "bg-[var(--accent-subtle)] text-[var(--accent-light)] border-l-2 border-[var(--accent)]" 
           : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
       )}
     >
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-2.5">
         <item.icon className={cn(
-          "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
+          "w-4.5 h-4.5 transition-transform duration-300 group-hover:scale-110",
           "group-[.active]:text-[var(--accent)]"
         )} />
         <span>{item.label}</span>

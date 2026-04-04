@@ -17,7 +17,7 @@ export const Badge: React.FC<BadgeProps> = ({ variant = 'info', className, ...pr
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-medium border transition-colors',
+        'inline-flex items-center px-[10px] py-[4px] rounded-full text-[12px] font-medium border leading-none transition-colors',
         variants[variant],
         className
       )}
@@ -25,3 +25,5 @@ export const Badge: React.FC<BadgeProps> = ({ variant = 'info', className, ...pr
     />
   );
 };
+
+Badge.displayName = 'Badge';
