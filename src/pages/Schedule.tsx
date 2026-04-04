@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
-import { formatDate, cn } from '../lib/utils';
+import { formatDate, formatTime, cn } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -271,70 +271,76 @@ export default function Schedule() {
                 {group.items.map(item => (
                   <div 
                     key={item.id} 
-                    className="group rounded-[var(--radius-md)] border border-[var(--border)] hover:border-[var(--accent)]/20 bg-[var(--bg-card)] transition-all p-4"
+                    className="group rounded-[var(--radius-md)] border border-[var(--border)] hover:border-[var(--accent)]/20 bg-[var(--bg-card)] transition-all flex gap-4 p-4"
                   >
-                    {/* Top: status + type */}
-                    <div className="flex items-center justify-between mb-3">
-                      <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
-                        {item.status === 'completed' ? 'Completado' : item.status === 'canceled' ? 'Cancelado' : 'Programado'}
-                      </Badge>
-                      <div className="flex items-center gap-2">
-                        {item.scheduled_time && (
-                          <span className="text-[12px] font-mono text-[var(--accent-light)] font-medium">
-                            {item.scheduled_time}
-                          </span>
-                        )}
-                        <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
-                      </div>
-                    </div>
-
-                    {/* Client info */}
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">{item.clients?.name}</h3>
-                          <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] mt-1">
-                            <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
-                            <span className="truncate">{item.clients?.address}</span>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => navigate(`/clients/${item.client_id}`)} 
-                          className="p-2 rounded-lg bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
-                      {/* Footer: phone + employee */}
-                      <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]/50">
-                        <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)]">
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>{item.clients?.phone}</span>
-                        </div>
-                        {item.employees && (
-                          <div className="flex items-center gap-1.5 text-[12px] text-[var(--accent-light)]">
-                            <Users className="w-3.5 h-3.5" />
-                            <span className="font-medium">{item.employees.name}</span>
-                          </div>
-                        )}
+                      {/* Left: Time column */}
+                      <div className="w-20 shrink-0 flex flex-col items-center justify-center border-r border-[var(--border)] pr-4">
+                        <span className={cn(
+                          "font-mono text-[13px] font-semibold text-center leading-none",
+                          item.scheduled_time ? "text-[var(--accent-light)]" : "text-[var(--text-muted)]"
+                        )}>
+                          {item.scheduled_time ? formatTime(item.scheduled_time) : 'Sin hora'}
+                        </span>
                       </div>
 
-                      {/* Action buttons */}
-                      {item.status === 'scheduled' && (
-                        <div className="flex gap-2 pt-2">
-                          <Button 
-                            size="sm"
-                            onClick={() => handleComplete(item)}
-                            className="flex-1 bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/20 hover:bg-[var(--success)] hover:text-white shadow-none"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Completar
-                          </Button>
+                      {/* Right: Existing content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Top: status + type */}
+                        <div className="flex items-center justify-between mb-3">
+                          <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
+                            {item.status === 'completed' ? 'Completado' : item.status === 'canceled' ? 'Cancelado' : 'Programado'}
+                          </Badge>
+                          <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
                         </div>
-                      )}
+
+                        {/* Client info */}
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">{item.clients?.name}</h3>
+                              <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] mt-1">
+                                <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+                                <span className="truncate">{item.clients?.address}</span>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => navigate(`/clients/${item.client_id}`)} 
+                              className="p-2 rounded-lg bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+                            >
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          {/* Footer: phone + employee */}
+                          <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]/50">
+                            <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)]">
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>{item.clients?.phone}</span>
+                            </div>
+                            {item.employees && (
+                              <div className="flex items-center gap-1.5 text-[12px] text-[var(--accent-light)]">
+                                <Users className="w-3.5 h-3.5" />
+                                <span className="font-medium">{item.employees.name}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action buttons */}
+                          {item.status === 'scheduled' && (
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm"
+                                onClick={() => handleComplete(item)}
+                                className="flex-1 bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/20 hover:bg-[var(--success)] hover:text-white shadow-none"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Completar
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
                 ))}
               </div>
             </section>
