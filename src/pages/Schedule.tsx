@@ -38,6 +38,7 @@ interface ScheduledService {
   service_type: string;
   scheduled_date: string;
   status: 'scheduled' | 'completed' | 'canceled';
+  scheduled_time?: string | null;
   assigned_employee_id?: string;
   employees?: {
     name: string;
@@ -64,6 +65,7 @@ export default function Schedule() {
     client_id: '',
     service_type: 'Limpieza Regular',
     scheduled_date: new Date().toISOString().split('T')[0],
+    scheduled_time: '',
     assigned_employee_id: ''
   });
 
@@ -163,6 +165,7 @@ export default function Schedule() {
         client_id: formData.client_id,
         service_type: formData.service_type,
         scheduled_date: formData.scheduled_date,
+        scheduled_time: formData.scheduled_time || null,
         assigned_employee_id: formData.assigned_employee_id || null,
         status: 'scheduled'
       });
@@ -173,6 +176,7 @@ export default function Schedule() {
         client_id: '',
         service_type: 'Limpieza Regular',
         scheduled_date: new Date().toISOString().split('T')[0],
+        scheduled_time: '',
         assigned_employee_id: ''
       });
       fetchSchedule();
@@ -274,7 +278,14 @@ export default function Schedule() {
                       <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
                         {item.status === 'completed' ? 'Completado' : item.status === 'canceled' ? 'Cancelado' : 'Programado'}
                       </Badge>
-                      <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
+                      <div className="flex items-center gap-2">
+                        {item.scheduled_time && (
+                          <span className="text-[12px] font-mono text-[var(--accent-light)] font-medium">
+                            {item.scheduled_time}
+                          </span>
+                        )}
+                        <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
+                      </div>
                     </div>
 
                     {/* Client info */}
@@ -357,13 +368,20 @@ export default function Schedule() {
               onChange={e => setFormData({...formData, scheduled_date: e.target.value})}
             />
             <Input 
-              label="Tipo de Servicio"
-              placeholder="Ej: Limpieza profunda"
-              required
-              value={formData.service_type}
-              onChange={e => setFormData({...formData, service_type: e.target.value})}
+              label="Hora (Opcional)"
+              type="time" 
+              value={formData.scheduled_time}
+              onChange={e => setFormData({...formData, scheduled_time: e.target.value})}
             />
           </div>
+
+          <Input 
+            label="Tipo de Servicio"
+            placeholder="Ej: Limpieza profunda"
+            required
+            value={formData.service_type}
+            onChange={e => setFormData({...formData, service_type: e.target.value})}
+          />
 
           <Select 
             label="Empleado Asignado (Opcional)"
