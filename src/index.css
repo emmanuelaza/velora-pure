@@ -22,6 +22,11 @@
   --success: #34D399;
   --warning: #FBBF24;
   --danger: #F87171;
+  
+  /* Redesign Tokens */
+  --gradient-accent: linear-gradient(135deg, var(--accent), var(--accent-light));
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-md: 12px;
 }
 
 @layer base {
@@ -31,14 +36,18 @@
 }
 
 @layer components {
-  /* These are now mainly managed via React components but kept as utilities if needed */
   .amount {
     @apply font-mono;
   }
 
-  /* Utilities to prevent heavy shadows globally if standard tailwind shadows are used */
-  .shadow-lg, .shadow-md, .shadow-xl, .shadow-2xl {
-    box-shadow: none !important;
+  /* Safe area for mobile bottom nav */
+  .safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  /* Section label for sidebar nav groups */
+  .section-label {
+    letter-spacing: 0.08em;
+    user-select: none;
   }
 }
-
