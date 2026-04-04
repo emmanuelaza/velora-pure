@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, User as UserIcon, Phone, MapPin, Wallet, Check, ChevronRight, Sparkles, Loader2, Landmark, ArrowLeft, ArrowRight, Zap } from 'lucide-react';
+import { Building2, User as UserIcon, Phone, MapPin, Wallet, Check, Sparkles, Landmark, ArrowLeft, ArrowRight, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';

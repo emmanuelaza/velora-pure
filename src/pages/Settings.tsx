@@ -8,7 +8,6 @@ import {
   LogOut, 
   ShieldCheck, 
   MapPin,
-  Loader2,
   Mail,
   ChevronRight,
   Globe,

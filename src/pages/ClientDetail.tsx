@@ -5,7 +5,6 @@ import {
   MessageCircle, 
   Plus, 
   Calendar, 
-  DollarSign, 
   Clock, 
   CheckCircle2,
   Trash2,
@@ -377,11 +376,13 @@ function DetailSkeleton() {
         <div className="w-64 h-12 bg-[var(--bg-card)] rounded-xl animate-pulse" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[1, 2, 3].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse" />) }
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
         <div className="lg:col-span-2 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
       </div>
+    </div>
+  );
 }
 

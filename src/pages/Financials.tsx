@@ -3,24 +3,19 @@ import {
   TrendingUp, 
   DollarSign, 
   Clock, 
-  ClipboardList, 
-  Users, 
-  ArrowUpRight, 
-  ArrowDownRight,
+  Target,
   Filter,
   Activity,
-  Zap,
-  Target
+  ArrowUpRight,
+  ArrowDownRight,
+  Zap
 } from 'lucide-react';
 import { 
-  BarChart, 
-  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  Cell,
   AreaChart,
   Area
 } from 'recharts';

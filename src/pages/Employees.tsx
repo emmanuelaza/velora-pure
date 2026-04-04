@@ -629,7 +629,7 @@ function PayrollCard({ employee, onPay }: { employee: Employee, onPay: (amount: 
                 <UserCheck className="w-4 h-4 text-[var(--accent)]" /> 
                 Servicios (Últimos 7 días)
               </span>
-              <Badge variant="accent" className="text-lg px-4 py-0.5 font-black">{fetching ? '..' : count}</Badge>
+              <Badge variant="info" className="text-lg px-4 py-0.5 font-black">{fetching ? '..' : count}</Badge>
             </div>
           ) : (
             <div className="flex justify-between items-center py-1 px-1">

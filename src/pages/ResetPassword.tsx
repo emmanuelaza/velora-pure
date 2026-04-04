@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Loader2, CheckCircle2, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, CheckCircle2, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 

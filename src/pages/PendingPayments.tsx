@@ -4,7 +4,7 @@ import {
   Search, 
   AlertCircle, 
   CheckCircle2,
-  DollarSign,
+  Clock,
   TrendingDown,
   ArrowRight
 } from 'lucide-react';

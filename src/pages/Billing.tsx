@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { 
   CreditCard, 
-  CheckCircle2, 
   AlertCircle, 
   ExternalLink,
   Calendar,
