@@ -12,7 +12,8 @@ import {
   X,
   TrendingUp,
   CreditCard,
-  MoreHorizontal
+  MoreHorizontal,
+  Package
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
@@ -44,6 +45,7 @@ export default function Layout() {
         { icon: AlertCircle, label: 'Cobros', path: '/pending', badge: true },
         { icon: Calendar, label: 'Agenda', path: '/schedule' },
         { icon: Users, label: 'Empleados', path: '/employees' },
+        { icon: Package, label: 'Paquetes', path: '/packages' },
         { icon: TrendingUp, label: 'Finanzas', path: '/financials' },
       ]
     },

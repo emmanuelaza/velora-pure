@@ -9,7 +9,8 @@ import {
   LayoutGrid,
   CheckCircle,
   Phone,
-  ArrowRight
+  ArrowRight,
+  Package
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -48,6 +49,15 @@ interface ScheduledService {
     address: string;
     phone: string;
   };
+  service_packages?: {
+    name: string;
+  };
+  package_id?: string;
+}
+
+interface ServicePackage {
+  id: string;
+  name: string;
 }
 
 export default function Schedule() {
@@ -60,13 +70,15 @@ export default function Schedule() {
   const [view, setView] = useState<'list' | 'week'>('list');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [packages, setPackages] = useState<ServicePackage[]>([]);
 
   const [formData, setFormData] = useState({
     client_id: '',
     service_type: 'Limpieza Regular',
     scheduled_date: new Date().toISOString().split('T')[0],
     scheduled_time: '',
-    assigned_employee_id: ''
+    assigned_employee_id: '',
+    package_id: ''
   });
 
   useEffect(() => {
@@ -83,7 +95,7 @@ export default function Schedule() {
       
       const { data, error } = await supabase
         .from('scheduled_services')
-        .select('*, clients(name, address, phone), employees(name)')
+        .select('*, clients(name, address, phone), employees(name), service_packages(name)')
         .eq('business_id', business.id)
         .gte('scheduled_date', hoy)
         .order('scheduled_date', { ascending: true });
@@ -103,6 +115,15 @@ export default function Schedule() {
         .eq('business_id', business.id)
         .eq('active', true)
         .order('name');
+
+      const { data: packagesData } = await supabase
+        .from('service_packages')
+        .select('id, name')
+        .eq('business_id', business.id)
+        .eq('is_active', true)
+        .order('name');
+      
+      setPackages(packagesData || []);
 
       setActiveEmployees(empData || []);
       setClients(clientData || []);
@@ -177,13 +198,30 @@ export default function Schedule() {
         service_type: 'Limpieza Regular',
         scheduled_date: new Date().toISOString().split('T')[0],
         scheduled_time: '',
-        assigned_employee_id: ''
+        assigned_employee_id: '',
+        package_id: ''
       });
       fetchSchedule();
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePackageChange = (packageId: string) => {
+    const pkg = packages.find(p => p.id === packageId);
+    if (pkg) {
+      setFormData({
+        ...formData,
+        package_id: packageId,
+        service_type: pkg.name
+      });
+    } else {
+      setFormData({
+        ...formData,
+        package_id: '',
+      });
     }
   };
 
@@ -290,7 +328,14 @@ export default function Schedule() {
                           <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
                             {item.status === 'completed' ? 'Completado' : item.status === 'canceled' ? 'Cancelado' : 'Programado'}
                           </Badge>
-                          <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
+                          {item.service_packages ? (
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-light)] px-2 py-0.5 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center gap-1">
+                              <Package className="w-3 h-3" />
+                              {item.service_packages.name}
+                            </span>
+                          ) : (
+                            <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
+                          )}
                         </div>
 
                         {/* Client info */}
@@ -380,6 +425,17 @@ export default function Schedule() {
               onChange={e => setFormData({...formData, scheduled_time: e.target.value})}
             />
           </div>
+
+          <Select 
+            label="Paquete de Servicio (Opcional)"
+            value={formData.package_id}
+            onChange={e => handlePackageChange(e.target.value)}
+          >
+            <option value="">Servicio personalizado</option>
+            {packages.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </Select>
 
           <Input 
             label="Tipo de Servicio"

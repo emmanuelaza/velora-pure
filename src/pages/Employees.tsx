@@ -9,7 +9,11 @@ import {
   AlertCircle,
   TrendingUp,
   CreditCard,
-  UserCheck
+  UserCheck,
+  MessageCircle,
+  Smartphone,
+  ChevronRight,
+  ExternalLink
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
@@ -33,6 +37,7 @@ interface Employee {
   payment_rate: number;
   payment_period: 'semanal' | 'quincenal';
   is_active: boolean;
+  phone?: string | null;
   notes?: string;
 }
 
@@ -68,6 +73,7 @@ export default function Employees() {
     payment_rate: '',
     payment_period: 'semanal' as 'semanal' | 'quincenal',
     is_active: true,
+    phone: '',
     notes: ''
   });
 
@@ -122,6 +128,7 @@ export default function Employees() {
         payment_rate: Number(formData.payment_rate),
         payment_period: formData.payment_period,
         is_active: formData.is_active,
+        phone: formData.phone,
         notes: formData.notes
       };
 
@@ -144,6 +151,7 @@ export default function Employees() {
         payment_rate: '',
         payment_period: 'semanal',
         is_active: true,
+        phone: '',
         notes: ''
       });
       fetchData();
@@ -191,6 +199,90 @@ export default function Employees() {
     }
   };
 
+  const [isWAModalOpen, setIsWAModalOpen] = useState(false);
+  const [selectedWAEmployee, setSelectedWAEmployee] = useState<Employee | null>(null);
+  const [waPeriod, setWAPeriod] = useState<'hoy' | 'mañana' | 'semana'>('hoy');
+  const [waServices, setWAServices] = useState<any[]>([]);
+  const [waLoading, setWALoading] = useState(false);
+
+  const fetchWAServices = async (employeeId: string, period: string) => {
+    setWALoading(true);
+    try {
+      const now = new Date();
+      let start = new Date(now);
+      let end = new Date(now);
+
+      if (period === 'hoy') {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+      } else if (period === 'mañana') {
+        start.setDate(now.getDate() + 1);
+        start.setHours(0, 0, 0, 0);
+        end.setDate(now.getDate() + 1);
+        end.setHours(23, 59, 59, 999);
+      } else {
+        start.setHours(0, 0, 0, 0);
+        end.setDate(now.getDate() + 7);
+        end.setHours(23, 59, 59, 999);
+      }
+
+      const { data, error } = await supabase
+        .from('scheduled_services')
+        .select('*, clients(name, address)')
+        .eq('assigned_employee_id', employeeId)
+        .eq('status', 'scheduled')
+        .gte('scheduled_date', start.toISOString().split('T')[0])
+        .lte('scheduled_date', end.toISOString().split('T')[0])
+        .order('scheduled_date')
+        .order('scheduled_time');
+
+      if (error) throw error;
+      setWAServices(data || []);
+    } catch (error) {
+      toast.error('Error al cargar servicios');
+    } finally {
+      setWALoading(false);
+    }
+  };
+
+  const generateWAMessage = () => {
+    if (!selectedWAEmployee) return '';
+    const periodText = waPeriod === 'hoy' ? 'hoy' : waPeriod === 'mañana' ? 'mañana' : 'esta semana';
+    let msg = `Hola ${selectedWAEmployee.name} 👋 Tus servicios de ${periodText}:\n\n`;
+
+    if (waServices.length === 0) return 'No hay servicios asignados para este período';
+
+    if (waPeriod === 'semana') {
+      const grouped: { [key: string]: any[] } = {};
+      waServices.forEach(s => {
+        const date = new Date(s.scheduled_date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(s);
+      });
+
+      Object.entries(grouped).forEach(([date, services]) => {
+        msg += `📅 ${date.charAt(0).toUpperCase() + date.slice(1)}:\n`;
+        services.forEach((s, sIdx) => {
+          msg += `${sIdx + 1}️⃣ ${s.scheduled_time || ''} — ${s.service_type || 'Limpieza'}\n👤 ${s.clients?.name}\n📍 ${s.clients?.address || 'Sin dirección'}\n\n`;
+        });
+      });
+    } else {
+      waServices.forEach((s, idx) => {
+        msg += `${idx + 1}️⃣ ${s.scheduled_time || ''} — ${s.service_type || 'Limpieza'}\n👤 ${s.clients?.name}\n📍 ${s.clients?.address || 'Sin dirección'}\n\n`;
+      });
+    }
+
+    msg += `Total: ${waServices.length} servicio(s)\nCualquier duda me avisas 💪\n— ${business?.business_name}`;
+    return msg;
+  };
+
+  const handleOpenWhatsApp = () => {
+    if (!selectedWAEmployee?.phone) return;
+    const phone = selectedWAEmployee.phone.replace(/\D/g, '');
+    const message = encodeURIComponent(generateWAMessage());
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -208,6 +300,7 @@ export default function Employees() {
               payment_rate: '',
               payment_period: 'semanal',
               is_active: true,
+              phone: '',
               notes: ''
             });
             setIsModalOpen(true);
@@ -303,41 +396,68 @@ export default function Employees() {
                         <p className="font-mono text-xl font-black text-[var(--text-primary)]">{formatCurrency(emp.payment_rate)}</p>
                       </div>
                     </div>
+
+                    {emp.phone && (
+                      <div className="flex items-center gap-2 mb-4 px-1">
+                        <Smartphone className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                        <span className="text-xs text-[var(--text-secondary)] font-medium">{emp.phone}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="p-4 bg-[var(--bg-secondary)]/50 flex gap-2">
+                  <div className="px-4 pb-4 space-y-2">
                     <Button 
-                      variant="secondary"
-                      size="sm"
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full justify-between hover:bg-[var(--accent)]/10 text-[var(--accent-light)] border border-[var(--accent)]/20"
                       onClick={() => {
-                        setEditingEmployee(emp);
-                        setFormData({
-                          name: emp.name,
-                          role: emp.role,
-                          payment_type: emp.payment_type,
-                          payment_rate: emp.payment_rate.toString(),
-                          payment_period: emp.payment_period,
-                          is_active: emp.is_active,
-                          notes: emp.notes || ''
-                        });
-                        setIsModalOpen(true);
+                        setSelectedWAEmployee(emp);
+                        setWAPeriod('hoy');
+                        fetchWAServices(emp.id, 'hoy');
+                        setIsWAModalOpen(true);
                       }}
-                      className="flex-1 bg-[var(--bg-card)] border-[var(--border)]"
                     >
-                      Configurar
+                      <span className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" />
+                        Enviar servicios
+                      </span>
+                      <ChevronRight className="w-4 h-4 opacity-50" />
                     </Button>
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleActive(emp)}
-                      className={cn(
-                        "h-10 px-4",
-                        emp.is_active ? "text-[var(--danger)] hover:bg-[var(--danger)]/10" : "text-[var(--success)] hover:bg-[var(--success)]/10"
-                      )}
-                      title={emp.is_active ? 'Desactivar' : 'Reactivar'}
-                    >
-                      {emp.is_active ? 'Desactivar' : 'Reactivar'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setEditingEmployee(emp);
+                          setFormData({
+                            name: emp.name,
+                            role: emp.role,
+                            payment_type: emp.payment_type,
+                            payment_rate: emp.payment_rate.toString(),
+                            payment_period: emp.payment_period,
+                            is_active: emp.is_active,
+                            phone: emp.phone || '',
+                            notes: emp.notes || ''
+                          });
+                          setIsModalOpen(true);
+                        }}
+                        className="flex-1 bg-[var(--bg-card)] border-[var(--border)] h-9 text-xs"
+                      >
+                        Configurar
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleActive(emp)}
+                        className={cn(
+                          "h-9 px-3 text-xs",
+                          emp.is_active ? "text-[var(--danger)] hover:bg-[var(--danger)]/10" : "text-[var(--success)] hover:bg-[var(--success)]/10"
+                        )}
+                        title={emp.is_active ? 'Desactivar' : 'Reactivar'}
+                      >
+                        {emp.is_active ? 'Desactivar' : 'Activar'}
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -431,12 +551,20 @@ export default function Employees() {
             onChange={e => setFormData({...formData, name: e.target.value})}
           />
 
-          <Input 
-            label="Cargo / Función"
-            placeholder="Ej: Limpiador/a Senior"
-            value={formData.role}
-            onChange={e => setFormData({...formData, role: e.target.value})}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input 
+              label="Cargo / Función"
+              placeholder="Ej: Limpiador/a Senior"
+              value={formData.role}
+              onChange={e => setFormData({...formData, role: e.target.value})}
+            />
+            <Input 
+              label="Teléfono"
+              placeholder="+1 305 000 0000"
+              value={formData.phone}
+              onChange={e => setFormData({...formData, phone: e.target.value})}
+            />
+          </div>
 
           <div className="space-y-4">
             <label className="text-[13px] font-bold text-[var(--text-secondary)] px-1 uppercase tracking-widest">Esquema de Retribución</label>
@@ -560,6 +688,103 @@ export default function Employees() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Enviar Servicios WhatsApp */}
+      <Modal 
+        isOpen={isWAModalOpen} 
+        onClose={() => setIsWAModalOpen(false)} 
+        title="Enviar servicios por WhatsApp"
+      >
+        <div className="space-y-6">
+          <div className="p-4 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border)]">
+            <p className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] mb-1">Empleado</p>
+            <p className="text-lg font-bold text-[var(--text-primary)]">{selectedWAEmployee?.name}</p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[13px] font-bold text-[var(--text-secondary)] px-1 uppercase tracking-widest">Período</label>
+            <div className="flex bg-[var(--bg-secondary)] p-1 rounded-xl border border-[var(--border)]">
+              {(['hoy', 'mañana', 'semana'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => {
+                    setWAPeriod(p);
+                    if (selectedWAEmployee) fetchWAServices(selectedWAEmployee.id, p);
+                  }}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-xs font-bold transition-all",
+                    waPeriod === p 
+                      ? "bg-[var(--accent-subtle)] text-[var(--accent-light)] border border-[var(--accent)]/30" 
+                      : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  )}
+                >
+                  {p === 'hoy' ? 'Hoy' : p === 'mañana' ? 'Mañana' : 'Esta semana'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[13px] font-bold text-[var(--text-secondary)] px-1 uppercase tracking-widest">Vista previa del mensaje</label>
+            <div className="relative">
+              <textarea
+                readOnly
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 text-[13px] text-[var(--text-secondary)] font-mono h-48 resize-none focus:outline-none"
+                value={waLoading ? 'Cargando servicios...' : generateWAMessage()}
+              />
+              {waLoading && (
+                <div className="absolute inset-0 bg-[var(--bg-secondary)]/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+                  <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!selectedWAEmployee?.phone && (
+            <div className="p-4 bg-[var(--danger)]/5 border border-[var(--danger)]/20 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-[var(--danger)] shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-[var(--danger)]">Sin teléfono registrado</p>
+                <p className="text-[11px] text-[var(--text-secondary)]">Este empleado no tiene teléfono. Agrégalo en su perfil para poder enviar mensajes.</p>
+                <button 
+                  onClick={() => {
+                    setIsWAModalOpen(false);
+                    setEditingEmployee(selectedWAEmployee);
+                    setFormData({
+                      name: selectedWAEmployee?.name || '',
+                      role: selectedWAEmployee?.role || '',
+                      payment_type: selectedWAEmployee?.payment_type || 'por_servicio',
+                      payment_rate: selectedWAEmployee?.payment_rate.toString() || '',
+                      payment_period: selectedWAEmployee?.payment_period || 'semanal',
+                      is_active: selectedWAEmployee?.is_active ?? true,
+                      phone: '',
+                      notes: selectedWAEmployee?.notes || ''
+                    });
+                    setIsModalOpen(true);
+                  }}
+                  className="text-xs font-bold text-[var(--accent-light)] hover:underline flex items-center gap-1 mt-2"
+                >
+                  Ir a editar perfil <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-2">
+            <Button variant="secondary" onClick={() => setIsWAModalOpen(false)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button 
+              className="flex-1 bg-[#25D366] hover:bg-[#128C7E] text-white border-none shadow-lg shadow-[#25D366]/20" 
+              onClick={handleOpenWhatsApp}
+              disabled={waLoading || waServices.length === 0 || !selectedWAEmployee?.phone}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Abrir WhatsApp
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

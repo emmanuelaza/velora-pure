@@ -39,6 +39,16 @@ interface Service {
   employees?: {
     name: string;
   };
+  service_packages?: {
+    name: string;
+  };
+  package_id?: string;
+}
+
+interface ServicePackage {
+  id: string;
+  name: string;
+  price: number;
 }
 
 interface Client {
@@ -65,6 +75,7 @@ export default function Services() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'paid'>('all');
   const [search, setSearch] = useState('');
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [packages, setPackages] = useState<ServicePackage[]>([]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -73,6 +84,7 @@ export default function Services() {
     date: new Date().toISOString().split('T')[0],
     status: 'pending' as 'paid' | 'pending',
     assigned_employee_id: '',
+    package_id: '',
     notes: ''
   });
 
@@ -110,12 +122,22 @@ export default function Services() {
       setClients(clientsData || []);
       setActiveEmployees(employeesData || []);
 
+      const { data: packagesData } = await supabase
+        .from('service_packages')
+        .select('id, name, price')
+        .eq('business_id', business.id)
+        .eq('is_active', true)
+        .order('name');
+      
+      setPackages(packagesData || []);
+
       let query = supabase
         .from('services')
         .select(`
           *,
           clients(name),
-          employees(name)
+          employees(name),
+          service_packages(name)
         `)
         .eq('business_id', business.id)
         .order('date', { ascending: false });
@@ -144,6 +166,7 @@ export default function Services() {
         date: formData.date,
         status: formData.status,
         assigned_employee_id: formData.assigned_employee_id || null,
+        package_id: formData.package_id || null,
         notes: formData.notes
       });
 
@@ -157,6 +180,7 @@ export default function Services() {
         date: new Date().toISOString().split('T')[0],
         status: 'pending',
         assigned_employee_id: '',
+        package_id: '',
         notes: ''
       });
       fetchData();
@@ -190,8 +214,25 @@ export default function Services() {
   };
 
   const filteredServices = services.filter(s => 
-    s.clients?.name.toLowerCase().includes(search.toLowerCase())
+    s.clients?.name.toLowerCase().includes(search.toLowerCase()) ||
+    s.service_packages?.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handlePackageChange = (packageId: string) => {
+    const pkg = packages.find(p => p.id === packageId);
+    if (pkg) {
+      setFormData({
+        ...formData,
+        package_id: packageId,
+        amount: pkg.price.toString()
+      });
+    } else {
+      setFormData({
+        ...formData,
+        package_id: '',
+      });
+    }
+  };
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
@@ -269,6 +310,11 @@ export default function Services() {
                   <tr key={s.id} className="border-b border-[var(--border)]/50 hover:bg-[var(--bg-hover)] transition-colors group">
                     <td className="px-4 py-3">
                       <span className="text-[14px] font-medium text-[var(--text-primary)]">{s.clients?.name}</span>
+                      {s.service_packages && (
+                        <p className="text-[11px] text-[var(--accent-light)] font-medium mt-0.5">
+                          📦 {s.service_packages.name}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-[13px] text-[var(--text-secondary)] text-center">{formatDate(s.date)}</td>
                     <td className="px-4 py-3 text-center">
@@ -360,22 +406,35 @@ export default function Services() {
             ))}
           </Select>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input 
-              label="Monto ($)"
-              type="number" 
-              required
-              placeholder="120"
-              value={formData.amount}
-              onChange={e => setFormData({...formData, amount: e.target.value})}
-            />
-            <Input 
-              label="Fecha"
-              type="date" 
-              required
-              value={formData.date}
-              onChange={e => setFormData({...formData, date: e.target.value})}
-            />
+          <div className="space-y-4">
+            <Select 
+              label="Paquete de Servicio (Opcional)"
+              value={formData.package_id}
+              onChange={e => handlePackageChange(e.target.value)}
+            >
+              <option value="">Selección manual de monto</option>
+              {packages.map(p => (
+                <option key={p.id} value={p.id}>{p.name} ({formatCurrency(p.price)})</option>
+              ))}
+            </Select>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input 
+                label="Monto ($)"
+                type="number" 
+                required
+                placeholder="120"
+                value={formData.amount}
+                onChange={e => setFormData({...formData, amount: e.target.value})}
+              />
+              <Input 
+                label="Fecha"
+                type="date" 
+                required
+                value={formData.date}
+                onChange={e => setFormData({...formData, date: e.target.value})}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
