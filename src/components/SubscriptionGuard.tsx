@@ -34,7 +34,7 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
   // Si está cancelado o vencido (esto es simple por ahora)
   const isSuspended = business?.subscription_status === 'canceled' || business?.subscription_status === 'past_due';
 
-  if (isSuspended && !location.pathname.includes('/billing')) {
+  if (isSuspended && !location.pathname.includes('/billing') && !location.pathname.includes('/packages')) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
         <div className="w-24 h-24 bg-[var(--danger)]/10 rounded-[32px] flex items-center justify-center mb-8 border border-[var(--danger)]/20 shadow-[0_0_50px_rgba(248,113,113,0.1)]">
