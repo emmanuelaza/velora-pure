@@ -12,15 +12,21 @@ import {
   Phone,
   MapPin,
   FileText,
-  Save
+  Save,
+  Users,
+  ClipboardList
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, formatDate, getInitials, avatarColor, cn, formatPhone } from '../lib/utils';
-import { StatusBadge } from '../components/StatusBadge';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Skeleton } from '../components/Skeleton';
 import toast from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { MetricCard } from '../components/ui/MetricCard';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 interface Client {
   id: string;
@@ -65,7 +71,6 @@ export default function ClientDetail() {
   const fetchClientData = async () => {
     setLoading(true);
     try {
-      // Fetch Client Info
       const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('*')
@@ -76,7 +81,6 @@ export default function ClientDetail() {
       setClient(clientData);
       setInternalNote(clientData.notes || '');
 
-      // Fetch Services
       const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select('*')
@@ -155,157 +159,172 @@ export default function ClientDetail() {
   if (!client) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <button 
+          <Button 
+            variant="secondary"
+            size="sm"
             onClick={() => navigate('/clients')}
-            className="p-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl hover:bg-[#2A2A2A] transition-all"
+            className="p-2 h-10 w-10 shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
-          </button>
+          </Button>
           <div 
-            className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl shrink-0"
             style={{ backgroundColor: `${avatarColor(client.name)}20`, color: avatarColor(client.name) }}
           >
             {getInitials(client.name)}
           </div>
-          <div>
-            <h1 className="text-3xl font-bold">{client.name}</h1>
-            <div className="flex items-center gap-3 text-sm text-[#888888] mt-1">
-              <span className={cn(
-                "w-2 h-2 rounded-full",
-                client.active ? "bg-[#00C896]" : "bg-[#888888]"
-              )} />
-              {client.active ? 'Activo' : 'Inactivo'}
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] truncate">{client.name}</h1>
+            <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)] mt-1.5 font-medium">
+              <Badge variant={client.active ? 'success' : 'muted'} className="px-2 py-0.5">
+                {client.active ? 'Activo' : 'Inactivo'}
+              </Badge>
               <span className="opacity-30">•</span>
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4 opacity-70" />
               {formatPhone(client.phone)}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <Button 
             onClick={() => navigate('/services', { state: { clientId: client.id } })}
-            className="btn-primary flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            <span>Registrar Servicio</span>
-          </button>
+            Registrar Servicio
+          </Button>
         </div>
       </header>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatSmall label="Total Generado" value={formatCurrency(totalGenerated)} icon={DollarSign} color="white" />
-        <StatSmall label="Saldo Pendiente" value={formatCurrency(totalPending)} icon={Clock} color={totalPending > 0 ? 'warning' : 'white'} />
-        <StatSmall label="Frecuencia" value={client.frequency} icon={Calendar} color="accent" />
+        <MetricCard title="Total Generado" value={formatCurrency(totalGenerated)} icon={DollarSign} subtitle="Total Generado" />
+        <MetricCard title="Saldo Pendiente" value={formatCurrency(totalPending)} icon={Clock} subtitle="Saldo Pendiente" trend={totalPending > 0 ? { value: 100, isPositive: false } : undefined} />
+        <MetricCard title="Frecuencia" value={client.frequency} icon={Calendar} subtitle="Frecuencia" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Info detail column */}
         <div className="lg:col-span-1 space-y-6">
-          <section className="card space-y-4">
-            <h3 className="font-bold text-lg border-b border-[#2A2A2A] pb-4">Detalles del Cliente</h3>
-            <div className="space-y-4 pt-2">
-              <InfoRow icon={MapPin} label="Dirección" value={`${client.address}, ${client.city}, ${client.state}`} />
-              <InfoRow icon={Phone} label="WhatsApp" value={formatPhone(client.phone)} />
+          <Card padding="lg" className="space-y-6">
+            <h3 className="font-bold text-lg text-[var(--text-primary)] border-b border-[var(--border)] pb-4 flex items-center gap-2">
+               <Users className="w-5 h-5 text-[var(--accent)]" />
+               Detalles del Cliente
+            </h3>
+            <div className="space-y-5">
+              <InfoRow icon={MapPin} label="Dirección Principal" value={`${client.address}, ${client.city}, ${client.state}`} />
+              <InfoRow icon={Phone} label="WhatsApp Business" value={formatPhone(client.phone)} />
               {client.notes && (
-                <div className="space-y-1">
-                  <p className="text-xs text-[#888888] font-bold uppercase tracking-wider">Notas</p>
-                  <p className="text-sm text-[#F5F5F5] bg-[#111] p-3 rounded-lg border border-[#2A2A2A]">{client.notes}</p>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest px-1">Notas del Perfil</p>
+                  <div className="text-sm text-[var(--text-primary)] bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)] leading-relaxed">
+                    {client.notes}
+                  </div>
                 </div>
               )}
             </div>
-          </section>
+          </Card>
 
-          <section className="card space-y-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
+          <Card padding="lg" className="space-y-4">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-[var(--text-primary)]">
               <FileText className="w-5 h-5 text-[var(--accent)]" />
               Notas Internas
             </h3>
             <div className="space-y-4">
               <textarea 
-                className="input-field w-full h-32 resize-none text-sm placeholder-[var(--text-secondary)]"
-                placeholder="Ej: tiene perro, llave debajo del tapete, prefiere los martes..."
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all h-32 resize-none"
+                placeholder="Escribe detalles privados sobre este cliente..."
                 value={internalNote}
                 onChange={e => setInternalNote(e.target.value)}
               />
-              <button 
+              <Button 
                 onClick={handleSaveNote}
-                disabled={savingNote || internalNote === client.notes}
-                className="w-full btn-primary flex items-center justify-center gap-2 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={savingNote}
+                disabled={internalNote === (client.notes || '')}
+                className="w-full"
               >
                 <Save className="w-4 h-4" />
-                {savingNote ? 'Guardando...' : 'Guardar nota'}
-              </button>
+                Guardar cambios
+              </Button>
             </div>
-          </section>
+          </Card>
         </div>
 
         {/* History column */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Historial de Servicios</h2>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">Historial de Servicios</h2>
+            <Badge variant="muted">{services.length} registros</Badge>
           </div>
 
-          <div className="card !p-0 overflow-hidden">
+          <Card padding="none" className="overflow-hidden border-[var(--border)]">
             {services.length === 0 ? (
-              <div className="py-12 text-center text-[#888888]">No hay servicios registrados.</div>
+              <div className="py-20 text-center text-[var(--text-secondary)]">
+                 <ClipboardList className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                 No hay servicios registrados.
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-[#111] border-b border-[#2A2A2A]">
-                      <th className="px-6 py-4 text-xs font-bold text-[#888888] uppercase tracking-wider">Fecha</th>
-                      <th className="px-6 py-4 text-xs font-bold text-[#888888] uppercase tracking-wider">Monto</th>
-                      <th className="px-6 py-4 text-xs font-bold text-[#888888] uppercase tracking-wider">Estado</th>
-                      <th className="px-6 py-4 text-xs font-bold text-[#888888] uppercase tracking-wider text-right">Acciones</th>
+                    <tr className="bg-[var(--bg-secondary)]/50 border-b border-[var(--border)]">
+                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Monto</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Estado</th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#2A2A2A]">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {services.map((service) => (
-                      <tr key={service.id} className="hover:bg-[#111] transition-colors group">
-                        <td className="px-6 py-4 text-sm font-medium">{formatDate(service.date)}</td>
-                        <td className="px-6 py-4 text-sm font-bold">{formatCurrency(service.amount)}</td>
+                      <tr key={service.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
+                        <td className="px-6 py-4 text-sm font-medium text-[var(--text-primary)]">{formatDate(service.date)}</td>
+                        <td className="px-6 py-4 text-sm font-bold font-mono text-[var(--text-primary)]">{formatCurrency(service.amount)}</td>
                         <td className="px-6 py-4 text-sm">
-                          <StatusBadge status={service.status} />
+                          <Badge variant={service.status === 'paid' ? 'success' : 'warning'}>
+                            {service.status === 'paid' ? 'Pagado' : 'Pendiente'}
+                          </Badge>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {service.status === 'pending' && (
-                              <button 
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
                                 onClick={() => sendReminder(service)}
-                                className="p-2 text-[#00C896] hover:bg-[#00C896]/10 rounded-lg transition-all"
-                                title="Enviar recordatorio WhatsApp"
+                                className="text-[var(--success)] hover:bg-[var(--success)]/10 h-8 w-8 p-0"
+                                title="Recordatorio WhatsApp"
                               >
-                                <MessageCircle className="w-5 h-5" />
-                              </button>
+                                <MessageCircle className="w-4 h-4" />
+                              </Button>
                             )}
-                            <button 
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
                               onClick={() => handleToggleStatus(service.id, service.status)}
                               className={cn(
-                                "p-2 rounded-lg transition-all",
-                                service.status === 'pending' 
-                                  ? "text-[#00C896] hover:bg-[#00C896]/10" 
-                                  : "text-[#888888] hover:bg-[#2A2A2A]"
+                                "h-8 w-8 p-0",
+                                service.status === 'pending' ? "text-[var(--success)]" : "text-[var(--text-muted)]"
                               )}
-                              title={service.status === 'paid' ? 'Marcar como pendiente' : 'Marcar como pagado'}
+                              title={service.status === 'paid' ? 'Pendiente' : 'Pagado'}
                             >
-                              <CheckCircle2 className="w-5 h-5" />
-                            </button>
-                            <button 
+                              <CheckCircle2 className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
                               onClick={() => {
                                 setServiceToDelete(service.id);
                                 setIsConfirmOpen(true);
                               }}
-                              className="p-2 text-[#FF4444] hover:bg-[#FF4444]/10 rounded-lg transition-all"
-                              title="Eliminar servicio"
+                              className="text-[var(--danger)] hover:bg-[var(--danger)]/10 h-8 w-8 p-0"
+                              title="Eliminar"
                             >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -314,7 +333,7 @@ export default function ClientDetail() {
                 </table>
               </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
 
@@ -322,44 +341,24 @@ export default function ClientDetail() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDeleteService}
-        title="¿Eliminar servicio?"
-        description="Esta acción eliminará el registro de este servicio permanentemente."
+        title="¿Eliminar registro de servicio?"
+        description="Esta acción eliminará permanentemente la información de este trabajo y afectará los subtotales."
         danger
-        confirmLabel="Eliminar"
+        confirmLabel="Eliminar Registro"
       />
-    </div>
-  );
-}
-
-function StatSmall({ label, value, icon: Icon, color }: any) {
-  const colors: any = {
-    white: 'text-white border-[#2A2A2A]',
-    warning: 'text-[#FFB800] border-[#FFB800]/30',
-    accent: 'text-[#00C896] border-[#00C896]/30'
-  };
-
-  return (
-    <div className={cn("card flex items-center gap-4 py-4 px-6", colors[color])}>
-      <div className="p-3 rounded-xl bg-black/20">
-        <Icon className="w-6 h-6" />
-      </div>
-      <div>
-        <p className="text-[10px] uppercase font-bold tracking-widest text-[#888888] mb-0.5">{label}</p>
-        <p className="text-xl font-bold">{value}</p>
-      </div>
     </div>
   );
 }
 
 function InfoRow({ icon: Icon, label, value }: any) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="p-2 bg-[#111] rounded-lg mt-0.5">
-        <Icon className="w-4 h-4 text-[#888888]" />
+    <div className="flex items-start gap-4">
+      <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] shrink-0">
+        <Icon className="w-4.5 h-4.5 text-[var(--accent)]" />
       </div>
-      <div>
-        <p className="text-[10px] text-[#888888] uppercase font-bold tracking-wider">{label}</p>
-        <p className="text-sm font-medium leading-tight mt-0.5">{value}</p>
+      <div className="min-w-0">
+        <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest">{label}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)] mt-1 leading-tight">{value}</p>
       </div>
     </div>
   );
@@ -369,16 +368,17 @@ function DetailSkeleton() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Skeleton className="w-10 h-10 rounded-xl" />
-        <Skeleton className="w-48 h-10 rounded-xl" />
+        <div className="w-12 h-12 bg-[var(--bg-card)] rounded-xl animate-pulse" />
+        <div className="w-48 h-10 bg-[var(--bg-card)] rounded-xl animate-pulse" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Skeleton className="lg:col-span-1 h-96 rounded-2xl" />
-        <Skeleton className="lg:col-span-2 h-96 rounded-2xl" />
+        <div className="lg:col-span-1 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+        <div className="lg:col-span-2 h-96 bg-[var(--bg-card)] rounded-2xl animate-pulse" />
       </div>
     </div>
   );
 }
+

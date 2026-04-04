@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Sparkles } from 'lucide-react';
 
 export function SubscriptionGuard({ children }: { children: ReactNode }) {
   const { business, loading: bizLoading } = useBusiness();
@@ -11,8 +11,17 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
 
   if (authLoading || bizLoading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#00C896] animate-spin" />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-[var(--accent)]/10 border-t-[var(--accent)] rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-[var(--accent)] animate-pulse" />
+          </div>
+        </div>
+        <div className="space-y-1 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--accent-light)]">Velora Pure</p>
+          <p className="text-[var(--text-muted)] text-[10px] uppercase font-mono">Initializing Workspace...</p>
+        </div>
       </div>
     );
   }
@@ -27,13 +36,14 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
 
   if (isSuspended && !location.pathname.includes('/billing')) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6 border border-red-500/20">
-          <AlertTriangle className="w-10 h-10 text-red-500" />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
+        <div className="w-24 h-24 bg-[var(--danger)]/10 rounded-[32px] flex items-center justify-center mb-8 border border-[var(--danger)]/20 shadow-[0_0_50px_rgba(248,113,113,0.1)]">
+          <AlertTriangle className="w-12 h-12 text-[var(--danger)]" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Tu acceso ha sido pausado</h2>
-        <p className="text-[#888888] max-w-sm mb-8">
-          Tu suscripción ha finalizado o hay un problema con tu pago. Por favor, actualiza tu plan para continuar.
+        <h2 className="text-3xl font-extrabold mb-3 tracking-tight">Acceso Restringido</h2>
+        <p className="text-[var(--text-secondary)] max-w-sm mb-10 leading-relaxed">
+          Tu suscripción ha finalizado o hemos detectado un problema con tu método de pago. 
+          Reactiva tu plan para continuar operando.
         </p>
         <Navigate to="/billing" replace />
       </div>
@@ -42,3 +52,4 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
+

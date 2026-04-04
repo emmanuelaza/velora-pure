@@ -1,5 +1,6 @@
 import { AlertTriangle, Trash2 } from 'lucide-react';
-import { Modal } from './Modal';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/Button';
 import { cn } from '../lib/utils';
 
 interface ConfirmDialogProps {
@@ -22,38 +23,42 @@ export function ConfirmDialog({
   danger = false 
 }: ConfirmDialogProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-sm">
-      <div className="text-center">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-[380px]">
+      <div className="text-center pt-2">
         <div className={cn(
-          "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border",
-          danger ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-[#FFB800]/10 border-[#FFB800]/20 text-[#FFB800]"
+          "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border shadow-inner",
+          danger 
+            ? "bg-[var(--danger)]/10 border-[var(--danger)]/20 text-[var(--danger)] shadow-[0_0_30px_rgba(248,113,113,0.1)]" 
+            : "bg-[var(--warning)]/10 border-[var(--warning)]/20 text-[var(--warning)] shadow-[0_0_30px_rgba(251,191,36,0.1)]"
         )}>
-          {danger ? <Trash2 className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
+          {danger ? <Trash2 className="w-10 h-10" /> : <AlertTriangle className="w-10 h-10" />}
         </div>
-        <p className="text-[#888888] text-sm mb-8 leading-relaxed">
+        
+        <p className="text-[var(--text-secondary)] text-sm mb-10 leading-relaxed font-medium">
           {description}
         </p>
+
         <div className="flex gap-4">
-          <button 
+          <Button 
+            variant="secondary"
             onClick={onClose}
-            className="flex-1 px-4 py-3 rounded-xl border border-[#2A2A2A] font-semibold text-[#888888] hover:bg-[#2A2A2A] transition-all"
+            className="flex-1 h-12 border-[var(--border-soft)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
           >
             Cancelar
-          </button>
-          <button 
+          </Button>
+          <Button 
             onClick={() => {
               onConfirm();
               onClose();
             }}
+            variant={danger ? "danger" : "primary"}
             className={cn(
-              "flex-1 px-4 py-3 rounded-xl font-bold transition-all",
-              danger 
-                ? "bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20" 
-                : "btn-primary hover:text-black"
+              "flex-1 h-12 font-bold",
+              danger && "bg-[var(--danger)] hover:bg-[var(--danger)]/90 shadow-xl shadow-[var(--danger)]/20"
             )}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

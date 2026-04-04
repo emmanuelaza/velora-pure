@@ -15,12 +15,18 @@ import {
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, formatPhone, getInitials, avatarColor, cn } from '../lib/utils';
-import { Modal } from '../components/Modal';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Skeleton } from '../components/Skeleton';
-import { EmptyState } from '../components/EmptyState';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { EmptyState } from '../components/EmptyState';
 
 interface Client {
   id: string;
@@ -106,38 +112,35 @@ export default function Clients() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Clientes</h1>
-          <p className="text-[#888888]">Gestiona y organiza tu base de datos de clientes</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Clientes</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Gestiona y organiza tu base de datos de clientes</p>
         </div>
-        <button 
+        <Button 
           onClick={() => {
             setEditingClient(null);
             setIsModalOpen(true);
           }}
-          className="btn-primary flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          <span>Nuevo Cliente</span>
-        </button>
+          Nuevo Cliente
+        </Button>
       </header>
 
       {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)]">
-        <div className="flex items-center gap-2 bg-[var(--bg-primary)] px-4 py-2.5 rounded-lg border border-[var(--border)] w-full md:w-96">
-          <Search className="w-5 h-5 text-[var(--text-secondary)]" />
-          <input 
-            type="text" 
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-secondary)] p-4 rounded-[16px] border border-[var(--border)]">
+        <div className="w-full md:w-96">
+          <Input 
+            icon={Search}
             placeholder="Buscar por nombre o teléfono..." 
-            className="bg-transparent border-none outline-none text-[var(--text-primary)] text-sm w-full placeholder-[var(--text-secondary)]"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
+        <div className="flex bg-[var(--bg-primary)] p-1 rounded-[12px] border border-[var(--border)]">
           <FilterButton label="Activos" active={filter === 'active'} onClick={() => setFilter('active')} />
           <FilterButton label="Inactivos" active={filter === 'inactive'} onClick={() => setFilter('inactive')} />
           <FilterButton label="Todos" active={filter === 'all'} onClick={() => setFilter('all')} />
@@ -146,7 +149,7 @@ export default function Clients() {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-[var(--bg-card)] rounded-[20px] animate-pulse" />)}
         </div>
       ) : filteredClients.length === 0 ? (
         <EmptyState 
@@ -159,80 +162,88 @@ export default function Clients() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map(client => (
-            <div key={client.id} className="card group hover:border-[var(--border-soft)] transition-all flex flex-col h-full relative">
-              <div className="flex items-start justify-between mb-4">
+            <Card key={client.id} padding="md" className="group flex flex-col h-full relative border-[var(--border)] hover:border-[var(--accent)]/30">
+              <div className="flex items-start justify-between mb-5">
                 <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg"
+                  className="w-12 h-12 rounded-[14px] flex items-center justify-center font-bold text-lg"
                   style={{ backgroundColor: `${avatarColor(client.name)}20`, color: avatarColor(client.name) }}
                 >
                   {getInitials(client.name)}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button 
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="p-2 h-9 w-9"
                     onClick={() => {
                       setEditingClient(client);
                       setIsModalOpen(true);
                     }}
-                    className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--accent-subtle)] rounded-lg transition-all"
                   >
                     <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="p-2 h-9 w-9 text-[var(--danger)] hover:bg-[var(--danger)]/10"
                     onClick={() => {
                       setClientToDelete(client.id);
                       setIsConfirmOpen(true);
                     }}
-                    className="p-2 text-[var(--text-secondary)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               <div className="space-y-4 flex-1">
                 <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-[var(--text-primary)] truncate">{client.name}</h3>
-                  {client.notes && (
-                    <FileText className="w-4 h-4 text-[var(--warning)] shrink-0" />
-                  )}
-                </div>
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-1">
-                    <Phone className="w-4 h-4" />
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] truncate">{client.name}</h3>
+                    {client.notes && (
+                      <Badge variant="warning" className="px-1.5 py-0.5">
+                        <FileText className="w-3 h-3" />
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-1.5 font-medium">
+                    <Phone className="w-4 h-4 opacity-70" />
                     <span>{formatPhone(client.phone)}</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 mt-4">
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-primary)]/80">
-                    <MapPin className="w-4 h-4 text-[var(--text-secondary)]" />
+                <div className="space-y-2.5 pt-1">
+                  <div className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]/80">
+                    <MapPin className="w-4 h-4 text-[var(--text-muted)]" />
                     <span className="truncate">{client.address}, {client.city}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-primary)]/80">
-                    <Calendar className="w-4 h-4 text-[var(--text-secondary)]" />
-                    <span>Frecuencia: <span className="text-[var(--success)] font-medium">{client.frequency}</span></span>
+                  <div className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]/80">
+                    <Calendar className="w-4 h-4 text-[var(--text-muted)]" />
+                    <span>Frecuencia: <span className="text-[var(--accent-light)] font-semibold">{client.frequency}</span></span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between">
+              <div className="mt-7 pt-5 border-t border-[var(--border)] flex items-center justify-between">
                 <div>
-                  <p className="section-title">Saldo Pendiente</p>
+                  <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Saldo Pendiente</p>
                   <p className={cn(
-                    "amount text-[24px] font-bold mt-1",
+                    "font-mono text-[24px] font-semibold mt-1",
                     client.total_debt! > 0 ? "text-[var(--warning)]" : "text-[var(--success)]"
                   )}>
                     {formatCurrency(client.total_debt || 0)}
                   </p>
                 </div>
-                <button 
+                <Button 
+                  variant="secondary"
+                  size="sm"
+                  className="h-10 w-10 p-0 rounded-full"
                   onClick={() => navigate(`/clients/${client.id}`)}
-                  className="p-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all"
                 >
                   <ChevronRight className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -271,8 +282,10 @@ function FilterButton({ label, active, onClick }: { label: string, active: boole
     <button 
       onClick={onClick}
       className={cn(
-        "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-        active ? "bg-[var(--accent)] text-white shadow-[0_0_10px_rgba(139,92,246,0.2)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+        "px-5 py-2 rounded-[10px] text-sm font-semibold transition-all",
+        active 
+          ? "bg-[var(--accent)] text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)]" 
+          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
       )}
     >
       {label}
@@ -288,7 +301,7 @@ function ClientForm({ editingClient, onClose, onSuccess }: any) {
     phone: editingClient?.phone || '',
     address: editingClient?.address || '',
     city: editingClient?.city || '',
-    state: editingClient?.state || 'California',
+    state: editingClient?.state || 'Florida',
     frequency: editingClient?.frequency || 'Cada 2 semanas',
     active: editingClient?.active ?? true,
     notes: editingClient?.notes || ''
@@ -323,98 +336,74 @@ function ClientForm({ editingClient, onClose, onSuccess }: any) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-[#888888]">Nombre Completo</label>
-        <input 
-          type="text" 
-          required 
-          className="input-field w-full"
-          value={formData.name}
-          onChange={e => setFormData({...formData, name: e.target.value})}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <Input 
+        label="Nombre Completo"
+        placeholder="Juan Pérez"
+        required 
+        value={formData.name}
+        onChange={e => setFormData({...formData, name: e.target.value})}
+      />
+
+      <div className="grid grid-cols-2 gap-4">
+        <Input 
+          label="Teléfono"
+          type="tel" 
+          placeholder="(000) 000-0000"
+          value={formData.phone}
+          onChange={e => setFormData({...formData, phone: e.target.value})}
+        />
+        <Select 
+          label="Frecuencia"
+          value={formData.frequency}
+          onChange={e => setFormData({...formData, frequency: e.target.value})}
+        >
+          <option>Semanal</option>
+          <option>Cada 2 semanas</option>
+          <option>Mensual</option>
+          <option>Una sola vez</option>
+        </Select>
+      </div>
+
+      <Input 
+        label="Dirección"
+        placeholder="123 Main St"
+        value={formData.address}
+        onChange={e => setFormData({...formData, address: e.target.value})}
+      />
+
+      <div className="grid grid-cols-2 gap-4">
+        <Input 
+          label="Ciudad"
+          placeholder="Miami"
+          value={formData.city}
+          onChange={e => setFormData({...formData, city: e.target.value})}
+        />
+        <Input 
+          label="Estado"
+          placeholder="Florida"
+          value={formData.state}
+          onChange={e => setFormData({...formData, state: e.target.value})}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#888888]">Teléfono</label>
-          <input 
-            type="tel" 
-            className="input-field w-full" 
-            value={formData.phone}
-            onChange={e => setFormData({...formData, phone: e.target.value})}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#888888]">Frecuencia</label>
-          <select 
-            className="input-field w-full"
-            value={formData.frequency}
-            onChange={e => setFormData({...formData, frequency: e.target.value})}
-          >
-            <option>Semanal</option>
-            <option>Cada 2 semanas</option>
-            <option>Mensual</option>
-            <option>Una sola vez</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-[#888888]">Dirección</label>
-        <input 
-          type="text" 
-          className="input-field w-full"
-          value={formData.address}
-          onChange={e => setFormData({...formData, address: e.target.value})}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#888888]">Ciudad</label>
-          <input 
-            type="text" 
-            className="input-field w-full"
-            value={formData.city}
-            onChange={e => setFormData({...formData, city: e.target.value})}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#888888]">Estado</label>
-          <input 
-            type="text" 
-            className="input-field w-full"
-            value={formData.state}
-            onChange={e => setFormData({...formData, state: e.target.value})}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-[#888888]">Notas (Opcional)</label>
+      <div className="space-y-1.5">
+        <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Notas (Opcional)</label>
         <textarea 
-          className="input-field w-full h-24 resize-none"
+          className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[10px] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[rgba(139,92,246,0.15)] transition-all h-24 resize-none"
+          placeholder="Instrucciones especiales..."
           value={formData.notes}
           onChange={e => setFormData({...formData, notes: e.target.value})}
         />
       </div>
 
       <div className="flex gap-4 pt-4">
-        <button 
-          type="button" 
-          onClick={onClose}
-          className="flex-1 px-4 py-3 rounded-xl border border-[#2A2A2A] font-semibold text-[#888888] hover:bg-[#2A2A2A] transition-all"
-        >
+        <Button variant="secondary" type="button" onClick={onClose} className="flex-1">
           Cancelar
-        </button>
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="flex-1 btn-primary flex items-center justify-center"
-        >
-          {loading ? <Skeleton className="w-20 h-4" /> : 'Guardar Cliente'}
-        </button>
+        </Button>
+        <Button type="submit" loading={loading} className="flex-1">
+          {editingClient ? 'Actualizar' : 'Guardar Cliente'}
+        </Button>
       </div>
     </form>
   );

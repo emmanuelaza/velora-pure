@@ -8,13 +8,21 @@ import {
   LogOut, 
   ShieldCheck, 
   MapPin,
-  Loader2
+  Loader2,
+  Mail,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Badge } from '../components/ui/Badge';
 
 export default function Settings() {
   const { user, signOut } = useAuth();
@@ -47,7 +55,7 @@ export default function Settings() {
       if (error) throw error;
       
       await refetch();
-      toast.success('Configuración guardada');
+      toast.success('Configuración guardada correctamente');
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -61,87 +69,153 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl">
+    <div className="space-y-8 max-w-5xl">
       <header>
-        <h1 className="text-3xl font-bold">Configuración</h1>
-        <p className="text-[#888888]">Gestiona tu perfil y métodos de pago</p>
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Configuración</h1>
+        <p className="text-[var(--text-secondary)] mt-1.5">Personaliza tu cuenta y métodos de cobro</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Navigation Tabs (Simulated) */}
-        <aside className="lg:col-span-1 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--accent-subtle)] text-[var(--accent-light)] rounded-lg font-bold border-l-2 border-[var(--accent)]">
-            <Building2 className="w-5 h-5" />
-            Perfil y Negocio
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Navigation Sidebar */}
+        <aside className="lg:col-span-3 space-y-2 sticky top-24">
+          <button className="w-full flex items-center justify-between group px-4 py-3 bg-[var(--accent-subtle)] text-[var(--accent-light)] rounded-xl font-bold border border-[var(--accent)]/20 shadow-lg shadow-[var(--accent)]/5 transition-all">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-4 h-4" />
+              <span className="text-sm">Perfil y Negocio</span>
+            </div>
+            <ChevronRight className="w-4 h-4 opacity-50" />
           </button>
+          
           <button 
             onClick={() => navigate('/billing')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] rounded-lg transition-all"
+            className="w-full flex items-center justify-between group px-4 py-3 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] rounded-xl transition-all"
           >
-            <ShieldCheck className="w-5 h-5" />
-            Suscripción y Plan
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-4 h-4" />
+              <span className="text-sm">Suscripción</span>
+            </div>
+            <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity" />
           </button>
-          <button 
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg transition-all mt-8"
-          >
-            <LogOut className="w-5 h-5" />
-            Cerrar sesión
-          </button>
+
+          <div className="pt-8 px-2">
+            <button 
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-4 py-3 text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-xl transition-all font-bold text-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
         </aside>
 
         {/* Form Content */}
-        <div className="lg:col-span-2 space-y-8">
-          <form onSubmit={handleUpdate} className="space-y-6">
-            {/* Business Info Section */}
-            <section className="card space-y-6">
-              <h3 className="section-title border-b border-[var(--border)] pb-4 flex items-center gap-2">
-                <Building2 className="w-4 h-4" /> Información del Negocio
-              </h3>
+        <div className="lg:col-span-9 space-y-8">
+          <form onSubmit={handleUpdate} className="space-y-8">
+            
+            {/* Section: Business Profile */}
+            <Card padding="lg" className="space-y-8 border-[var(--border-soft)]">
+              <div className="flex items-center gap-3 border-b border-[var(--border)-soft] pb-6 px-1">
+                <div className="p-2 bg-[var(--accent-subtle)] rounded-lg">
+                   <Building2 className="w-5 h-5 text-[var(--accent)]" />
+                </div>
+                <h3 className="text-lg font-bold text-[var(--text-primary)]">Perfil del Negocio</h3>
+              </div>
               
-              <div className="space-y-4">
-                <InputGroup icon={Building2} label="Nombre del Negocio" value={formData.business_name} onChange={v => setFormData({...formData, business_name: v})} />
-                <InputGroup icon={User} label="Nombre del Dueño" value={formData.owner_name} onChange={v => setFormData({...formData, owner_name: v})} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="Nombre de la Empresa" 
+                  icon={Building2}
+                  value={formData.business_name} 
+                  onChange={e => setFormData({...formData, business_name: e.target.value})} 
+                />
+                <Input 
+                  label="Dueño / Administrador" 
+                  icon={User}
+                  value={formData.owner_name} 
+                  onChange={e => setFormData({...formData, owner_name: e.target.value})} 
+                />
+                <Input 
+                  label="WhatsApp de Negocio" 
+                  icon={Phone}
+                  value={formData.phone} 
+                  onChange={e => setFormData({...formData, phone: e.target.value})} 
+                />
                 <div className="grid grid-cols-2 gap-4">
-                  <InputGroup icon={Phone} label="Teléfono" value={formData.phone} onChange={v => setFormData({...formData, phone: v})} />
-                  <InputGroup icon={MapPin} label="Ciudad" value={formData.city} onChange={v => setFormData({...formData, city: v})} />
+                  <Input 
+                    label="Ciudad" 
+                    icon={MapPin}
+                    value={formData.city} 
+                    onChange={e => setFormData({...formData, city: e.target.value})} 
+                  />
+                   <Input 
+                    label="Estado" 
+                    value={formData.state} 
+                    onChange={e => setFormData({...formData, state: e.target.value})} 
+                  />
                 </div>
               </div>
-            </section>
+            </Card>
 
-            {/* Payments Section */}
-            <section className="card space-y-6">
-              <h3 className="section-title border-b border-[var(--border)] pb-4 flex items-center gap-2">
-                <Wallet className="w-4 h-4" /> Métodos de Pago
-              </h3>
-              <p className="text-xs text-[var(--text-secondary)]">Esta información se usará en los recordatorios que envíes a tus clientes.</p>
+            {/* Section: Payment Hub */}
+            <Card padding="lg" className="space-y-8 border-[var(--border-soft)]">
+              <div className="flex items-center gap-3 border-b border-[var(--border)-soft] pb-6 px-1">
+                <div className="p-2 bg-[var(--success)]/10 rounded-lg">
+                   <Wallet className="w-5 h-5 text-[var(--success)]" />
+                </div>
+                <div>
+                   <h3 className="text-lg font-bold text-[var(--text-primary)]">Pasarelas de Cobro</h3>
+                   <p className="text-xs text-[var(--text-muted)] mt-0.5">Visibles en tus recordatorios de WhatsApp</p>
+                </div>
+              </div>
               
-              <div className="space-y-4">
-                <InputGroup icon={Wallet} label="Zelle (Email o Teléfono)" value={formData.zelle_info} onChange={v => setFormData({...formData, zelle_info: v})} />
-                <InputGroup icon={Wallet} label="Venmo (Usuario sin @)" value={formData.venmo_info} onChange={v => setFormData({...formData, venmo_info: v})} />
-                <InputGroup icon={Wallet} label="CashApp (Usuario sin $)" value={formData.cashapp_info} onChange={v => setFormData({...formData, cashapp_info: v})} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Input 
+                  label="Zelle" 
+                  placeholder="Email o Teléfono"
+                  value={formData.zelle_info} 
+                  onChange={e => setFormData({...formData, zelle_info: e.target.value})} 
+                />
+                <Input 
+                  label="Venmo" 
+                  placeholder="Usuario"
+                  value={formData.venmo_info} 
+                  onChange={e => setFormData({...formData, venmo_info: e.target.value})} 
+                />
+                <Input 
+                  label="CashApp" 
+                  placeholder="Usuario"
+                  value={formData.cashapp_info} 
+                  onChange={e => setFormData({...formData, cashapp_info: e.target.value})} 
+                />
               </div>
-            </section>
+            </Card>
 
-            {/* Account Info */}
-            <section className="card bg-[var(--bg-primary)] border-[var(--border)]">
-              <h3 className="section-title mb-4">Información de Acceso</h3>
-              <div className="p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border)]">
-                <p className="text-xs text-[var(--text-secondary)]">Correo Electrónico</p>
-                <p className="font-medium text-[var(--text-primary)]">{user?.email}</p>
-                <p className="text-[10px] text-[var(--text-secondary)] mt-2 italic">Velora Pure no permite cambiar el correo principal por seguridad.</p>
+            {/* Section: Account & Security */}
+            <Card padding="lg" variant="subtle" className="bg-[var(--bg-card)]/30 border-[var(--border-soft)]">
+              <div className="flex items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center border border-[var(--border)]">
+                    <Mail className="w-6 h-6 text-[var(--text-muted)]" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Email de Acceso</p>
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">{user?.email}</p>
+                  </div>
+                </div>
+                <Badge variant="muted" className="bg-[var(--bg-secondary)] font-bold">Inmutable</Badge>
               </div>
-            </section>
+            </Card>
 
-            <div className="sticky bottom-8 py-4 bg-[var(--bg-primary)]/80 backdrop-blur-md">
-              <button 
+            <div className="flex justify-end pt-4">
+              <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full btn-primary flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+                size="lg"
+                className="w-full md:w-auto min-w-[200px] h-14 shadow-xl shadow-[var(--accent)]/10"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                 Guardar Cambios
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -150,21 +224,3 @@ export default function Settings() {
   );
 }
 
-function InputGroup({ icon: Icon, label, value, onChange }: { icon: any, label: string, value: string, onChange: (v: string) => void }) {
-  return (
-    <div className="space-y-2">
-      <label className="text-xs font-bold text-[#888888] uppercase ml-1">{label}</label>
-      <div className="relative group">
-        <div className="absolute left-3 top-3.5 text-[var(--text-secondary)] group-focus-within:text-[var(--accent)] transition-colors">
-          <Icon className="w-5 h-5" />
-        </div>
-        <input 
-          type="text" 
-          className="input-field w-full pl-10 h-10"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}

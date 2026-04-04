@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, User as UserIcon, Phone, MapPin, Wallet, Check, ChevronRight, Sparkles, Loader2 } from 'lucide-react';
+import { Building2, User as UserIcon, Phone, MapPin, Wallet, Check, ChevronRight, Sparkles, Loader2, Landmark } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
 import toast from 'react-hot-toast';
+import { cn } from '../lib/utils';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
@@ -26,7 +32,7 @@ export default function Onboarding() {
     ownerName: '',
     phone: '',
     city: '',
-    state: 'California',
+    state: 'Florida',
     zelle: '',
     venmo: '',
     cashapp: '',
@@ -75,203 +81,220 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xl">
-        {/* Progress Header */}
-        <div className="flex items-center justify-between mb-12 relative">
-          <div className="absolute top-1/2 left-0 w-full h-0.5 bg-[#2A2A2A] -z-10" />
-          <div className="absolute top-1/2 left-0 h-0.5 bg-[#00C896] transition-all duration-300 -z-10" style={{ width: `${((step - 1) / 2) * 100}%` }} />
-          
-          {[1, 2, 3].map((s) => (
-            <div 
-              key={s}
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
-                step >= s ? 'bg-[#00C896] text-black scale-110' : 'bg-[#1A1A1A] text-[#888888] border border-[#2A2A2A]'
-              }`}
-            >
-              {step > s ? <Check className="w-6 h-6" /> : s}
-            </div>
-          ))}
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[var(--accent)]/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[var(--success)]/5 rounded-full blur-[120px]" />
+      
+      <div className="w-full max-w-2xl relative z-10 animate-in fade-in duration-700">
+        
+        {/* Logo and Progress Indicator */}
+        <div className="flex flex-col items-center mb-16">
+           <div className="mb-10 text-center space-y-2">
+             <div className="flex items-center justify-center gap-2 text-[var(--accent)] mb-2">
+               <Sparkles className="w-6 h-6" />
+               <span className="font-bold uppercase tracking-[0.4em] text-[10px]">Setup Wizard</span>
+             </div>
+             <h1 className="text-4xl font-extrabold tracking-tight">Velora <span className="text-[var(--accent)]">Pure</span></h1>
+           </div>
+
+           <div className="flex items-center gap-4 w-full px-12">
+             {[1, 2, 3].map((s) => (
+               <div key={s} className="flex-1 flex flex-col gap-3">
+                  <div className={cn(
+                    "h-1.5 rounded-full transition-all duration-500",
+                    step >= s ? "bg-[var(--accent)]" : "bg-[var(--bg-secondary)]"
+                  )} />
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest text-center transition-colors",
+                    step >= s ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
+                  )}>
+                    {s === 1 ? 'Negocio' : s === 2 ? 'Pagos' : 'Finalizar'}
+                  </span>
+               </div>
+             ))}
+           </div>
         </div>
 
-        {/* Wizard Card */}
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-8 shadow-2xl">
+        {/* Wizard Card Container */}
+        <div className="min-h-[460px]">
           {step === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">Tu Negocio</h2>
-                <p className="text-[#888888]">Cuéntanos sobre tu empresa de limpieza</p>
+            <Card padding="lg" variant="elevated" className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Háblanos de tu Negocio</h2>
+                <p className="text-[var(--text-secondary)] text-sm">Información básica para personalizar tu perfil</p>
               </div>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#888888]">Nombre del Negocio *</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-3.5 w-5 h-5 text-[#888888]" />
-                    <input
-                      type="text"
-                      className="input-field w-full pl-10"
-                      placeholder="Ej: Crystal Clean Services"
-                      value={formData.businessName}
-                      onChange={e => setFormData({...formData, businessName: e.target.value})}
-                    />
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label="Nombre de la Empresa"
+                  placeholder="Ej: Crystal Clean Services"
+                  icon={Building2}
+                  value={formData.businessName}
+                  onChange={e => setFormData({...formData, businessName: e.target.value})}
+                  className="md:col-span-2"
+                />
+                
+                <Input
+                  label="Dueño / Admin"
+                  placeholder="Tu nombre completo"
+                  icon={UserIcon}
+                  value={formData.ownerName}
+                  onChange={e => setFormData({...formData, ownerName: e.target.value})}
+                />
+
+                <Input
+                  label="WhatsApp de Negocio"
+                  placeholder="(XXX) XXX-XXXX"
+                  icon={Phone}
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                />
+
+                <Input
+                  label="Ciudad de Operación"
+                  placeholder="Ej: Miami"
+                  icon={MapPin}
+                  value={formData.city}
+                  onChange={e => setFormData({...formData, city: e.target.value})}
+                />
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#888888]">Tu Nombre Completo *</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-3.5 w-5 h-5 text-[#888888]" />
-                    <input
-                      type="text"
-                      className="input-field w-full pl-10"
-                      placeholder="Ej: Emmanuel"
-                      value={formData.ownerName}
-                      onChange={e => setFormData({...formData, ownerName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#888888]">Teléfono</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3.5 w-5 h-5 text-[#888888]" />
-                      <input
-                        type="tel"
-                        className="input-field w-full pl-10"
-                        placeholder="(XXX) XXX-XXXX"
-                        value={formData.phone}
-                        onChange={e => setFormData({...formData, phone: e.target.value})}
-                      />
+                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider ml-1">Estado / Región</label>
+                  <div className="relative group">
+                    <div className="absolute left-3 top-3.5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors">
+                      <Landmark className="w-5 h-5" />
                     </div>
+                    <select
+                      className="input-field w-full pl-10 h-12 bg-[var(--bg-secondary)] border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] transition-all appearance-none"
+                      value={formData.state}
+                      onChange={e => setFormData({...formData, state: e.target.value})}
+                    >
+                      {US_STATES.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#888888]">Ciudad</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-[#888888]" />
-                      <input
-                        type="text"
-                        className="input-field w-full pl-10"
-                        placeholder="Miami"
-                        value={formData.city}
-                        onChange={e => setFormData({...formData, city: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#888888]">Estado</label>
-                  <select
-                    className="input-field w-full"
-                    value={formData.state}
-                    onChange={e => setFormData({...formData, state: e.target.value})}
-                  >
-                    {US_STATES.map(state => (
-                      <option key={state} value={state}>{state}</option>
-                    ))}
-                  </select>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
 
           {step === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">¿Cómo reciben sus pagos?</h2>
-                <p className="text-[#888888]">Esta información aparecerá en tus recordatorios</p>
+            <Card padding="lg" variant="elevated" className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-700">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Canales de Recaudación</h2>
+                <p className="text-[var(--text-secondary)] text-sm">¿Dónde prefieres recibir tus pagos?</p>
               </div>
 
-              <div className="space-y-4">
-                <PaymentInput 
-                  label="Zelle" 
-                  placeholder="Número o email" 
-                  value={formData.zelle}
-                  onChange={v => setFormData({...formData, zelle: v})}
-                />
-                <PaymentInput 
-                  label="Venmo" 
-                  placeholder="Usuario (sin @)" 
-                  value={formData.venmo}
-                  onChange={v => setFormData({...formData, venmo: v})}
-                />
-                <PaymentInput 
-                  label="CashApp" 
-                  placeholder="Usuario (sin $)" 
-                  value={formData.cashapp}
-                  onChange={v => setFormData({...formData, cashapp: v})}
-                />
-                
-                <label className="flex items-center gap-3 p-4 rounded-xl border border-[#2A2A2A] bg-[#111] cursor-pointer hover:border-[#00C896] transition-colors mt-6">
-                  <input 
-                    type="checkbox" 
-                    className="w-5 h-5 bg-[#1A1A1A] border-[#2A2A2A] rounded checked:bg-[#00C896] accent-[#00C896]" 
-                    checked={formData.acceptsCash}
-                    onChange={e => setFormData({...formData, acceptsCash: e.target.checked})}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input 
+                    label="Zelle" 
+                    placeholder="Email o Teléfono" 
+                    icon={Wallet}
+                    value={formData.zelle}
+                    onChange={v => setFormData({...formData, zelle: v.target.value})}
                   />
-                  <div>
-                    <span className="block font-medium">También acepto efectivo</span>
-                    <span className="text-xs text-[#888888]">Los clientes podrán indicar que pagaron en cash</span>
+                  <Input 
+                    label="Venmo" 
+                    placeholder="Usuario sin @" 
+                    icon={Wallet}
+                    value={formData.venmo}
+                    onChange={v => setFormData({...formData, venmo: v.target.value})}
+                  />
+                  <Input 
+                    label="CashApp" 
+                    placeholder="Usuario sin $" 
+                    icon={Wallet}
+                    value={formData.cashapp}
+                    onChange={v => setFormData({...formData, cashapp: v.target.value})}
+                  />
+                  
+                  <div className="flex items-center gap-4 p-5 rounded-2xl border border-[var(--border)-soft] bg-[var(--bg-secondary)]/30 hover:border-[var(--success)]/30 transition-all cursor-pointer group" onClick={() => setFormData({...formData, acceptsCash: !formData.acceptsCash})}>
+                    <div className={cn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      formData.acceptsCash ? "bg-[var(--success)] border-[var(--success)]" : "border-[var(--border)] group-hover:border-[var(--success)]/50"
+                    )}>
+                      {formData.acceptsCash && <Check className="w-4 h-4 text-black" />}
+                    </div>
+                    <div>
+                      <span className="block font-bold text-sm">Acepto Efectivo</span>
+                      <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-tighter">Habilita registro manual</span>
+                    </div>
                   </div>
-                </label>
+                </div>
+
+                <div className="p-4 bg-[var(--accent-subtle)] border border-[var(--accent)]/10 rounded-xl">
+                  <p className="text-[11px] text-[var(--accent-light)] leading-relaxed italic text-center">
+                    "Estos métodos aparecerán integrados en los recordatorios automáticos que envíes por WhatsApp."
+                  </p>
+                </div>
               </div>
-            </div>
+            </Card>
           )}
 
           {step === 3 && (
-            <div className="text-center py-8 animate-in zoom-in duration-500">
-              <div className="w-20 h-20 bg-[#00C896]/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-[#00C896]/20">
-                <Sparkles className="w-10 h-10 text-[#00C896]" />
+            <Card padding="lg" variant="elevated" className="text-center py-12 animate-in zoom-in-95 duration-700 flex flex-col items-center">
+              <div className="w-24 h-24 bg-[var(--success)]/10 rounded-[32px] flex items-center justify-center mb-8 border border-[var(--success)]/20 shadow-[0_0_50px_rgba(52,211,153,0.1)]">
+                <Sparkles className="w-12 h-12 text-[var(--success)]" />
               </div>
-              <h2 className="text-3xl font-bold mb-4">¡Todo listo, {formData.ownerName.split(' ')[0]}!</h2>
-              <p className="text-[#888888] mb-8 max-w-sm mx-auto">
-                Tu cuenta está configurada. Ahora puedes empezar a registrar tus clientes y controlar tus cobros.
+              <h2 className="text-3xl font-extrabold mb-4 tracking-tight">¡Bienvenido, {formData.ownerName.split(' ')[0]}!</h2>
+              <p className="text-[var(--text-secondary)] mb-10 max-w-sm mx-auto leading-relaxed">
+                Tu plataforma está lista. Hemos configurado el núcleo de tu negocio para que empieces a crecer hoy mismo.
               </p>
               
-              <div className="bg-[#111] p-6 rounded-xl border border-[#2A2A2A] text-left mb-8">
-                <div className="flex items-center gap-2 text-[#00C896] mb-2 font-semibold">
+              <div className="w-full bg-[var(--bg-secondary)]/50 p-6 rounded-2xl border border-[var(--border)-soft] text-left">
+                <div className="flex items-center gap-3 text-[var(--success)] mb-3">
                   <Check className="w-5 h-5" />
-                  <span>Configuración Completa</span>
+                  <span className="font-bold uppercase tracking-wider text-xs">Empresa Registrada</span>
                 </div>
-                <p className="text-sm text-[#888888]">
-                  Tu cuenta ha sido creada exitosamente. Activa tu plan en la sección de suscripción para empezar a trabajar.
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Para activar todas las funciones premium, incluyendo reportes avanzados y automatizaciones ilimitadas, 
+                  visita la sección de facturación una vez que entres.
                 </p>
               </div>
-            </div>
+            </Card>
           )}
+        </div>
 
-          {/* Navigation */}
-          <div className="flex gap-4 mt-10">
-            {step > 1 && step < 3 && (
-              <button 
-                onClick={prevStep}
-                className="btn-primary border-[#2A2A2A] text-[#888888] hover:bg-[#2A2A2A] hover:text-[#F5F5F5] flex-1"
-              >
-                Atrás
-              </button>
-            )}
-            
-            {step < 3 ? (
-              <button 
-                onClick={nextStep}
-                disabled={step === 1 && (!formData.businessName || !formData.ownerName)}
-                className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            ) : (
-              <button 
-                onClick={handleComplete}
-                disabled={loading}
-                className="btn-primary w-full flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Ir al dashboard'}
-                {!loading && <ChevronRight className="w-5 h-5" />}
-              </button>
-            )}
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between gap-6 mt-12 px-2">
+          {step > 1 && step < 3 ? (
+            <button 
+              onClick={prevStep}
+              className="px-6 py-3 text-[var(--text-muted)] hover:text-[var(--text-primary)] font-bold text-sm uppercase tracking-widest transition-colors"
+            >
+              Regresar
+            </button>
+          ) : <div />}
+          
+          <div className="min-w-[200px]">
+             {step < 3 ? (
+               <Button 
+                 onClick={nextStep}
+                 disabled={step === 1 && (!formData.businessName || !formData.ownerName)}
+                 size="lg"
+                 className="w-full h-14 group shadow-xl shadow-[var(--accent)]/10"
+               >
+                 <span>Siguiente</span>
+                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+               </Button>
+             ) : (
+               <Button 
+                 onClick={handleComplete}
+                 disabled={loading}
+                 size="lg"
+                 className="w-full h-14 shadow-2xl shadow-[var(--success)]/10 bg-gradient-to-r from-[var(--success)] to-[#10B981] border-none text-black"
+               >
+                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                   <>
+                     <span>Comenzar Ahora</span>
+                     <ChevronRight className="w-5 h-5" />
+                   </>
+                 )}
+               </Button>
+             )}
           </div>
         </div>
       </div>
@@ -279,22 +302,3 @@ export default function Onboarding() {
   );
 }
 
-function PaymentInput({ label, placeholder, value, onChange }: { label: string, placeholder: string, value: string, onChange: (v: string) => void }) {
-  return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-[#888888]">{label}</label>
-      <div className="relative">
-        <div className="absolute left-3 top-3.5 flex items-center gap-2 opacity-50">
-          <Wallet className="w-5 h-5" />
-        </div>
-        <input
-          type="text"
-          className="input-field w-full pl-10"
-          placeholder={placeholder}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}

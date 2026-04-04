@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const resendApiKey = Deno.env.get('RESEND_API_KEY')!
@@ -57,7 +57,7 @@ serve(async () => {
     if (!business?.email) continue
 
     const totalPending = services.reduce((sum: number, s: any) => sum + Number(s.amount), 0)
-    const formatCurrency = (n: number) => `$${n.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',')}`
+    const formatCurrency = (n: number) => `$${n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
     const formatDate = (d: string) => new Date(d).toLocaleDateString('es-US', { day: 'numeric', month: 'long', year: 'numeric' })
     const daysSince = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / 86400000)
 

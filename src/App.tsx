@@ -13,6 +13,7 @@ import Settings from './pages/Settings';
 import Billing from './pages/Billing';
 import ResetPassword from './pages/ResetPassword';
 import Employees from './pages/Employees';
+import Financials from './pages/Financials';
 import Layout from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
@@ -67,6 +68,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/employees" element={<Employees />} />
+        <Route path="/financials" element={<Financials />} />
       </Route>
 
       {/* Fallback */}

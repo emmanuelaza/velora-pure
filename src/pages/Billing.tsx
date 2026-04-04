@@ -4,15 +4,20 @@ import {
   CheckCircle2, 
   AlertCircle, 
   ExternalLink,
-  ShieldCheck,
   Calendar,
   Loader2,
+  Zap,
+  Lock
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { createCheckoutUrl } from '../lib/lemonsqueezy';
 import { toast } from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 export default function Billing() {
   const { business, refetch: refetchBusiness } = useBusiness();
@@ -28,7 +33,6 @@ export default function Billing() {
     if (params.get('success') === 'true') {
       toast.success('¡Plan activado! Bienvenido a Velora Pure 🎉');
       refetchBusiness();
-      // Limpiar URL
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [refetchBusiness]);
@@ -55,112 +59,130 @@ export default function Billing() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl">
+    <div className="space-y-10 max-w-5xl">
       <header>
-        <h1 className="text-3xl font-bold">Suscripción</h1>
-        <p className="text-[#888888]">Gestiona tu plan y facturación de Velora Pure</p>
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Suscripción y Plan</h1>
+        <p className="text-[var(--text-secondary)] mt-1.5">Gestiona tu facturación y el nivel de acceso de tu negocio</p>
       </header>
 
       {isCanceled && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-4">
-          <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-6 h-6 text-red-500" />
+        <Card variant="subtle" padding="md" className="bg-[var(--danger)]/5 border-[var(--danger)]/20 animate-in slide-in-from-top-4">
+          <div className="flex items-center gap-4">
+             <div className="w-10 h-10 bg-[var(--danger)]/10 rounded-full flex items-center justify-center">
+               <AlertCircle className="w-6 h-6 text-[var(--danger)]" />
+             </div>
+             <div>
+               <h4 className="font-bold text-[var(--danger)]">Tu acceso está suspendido</h4>
+               <p className="text-sm text-[var(--text-secondary)]">Reactiva tu plan para continuar operando sin interrupciones.</p>
+             </div>
           </div>
-          <div>
-            <h4 className="font-bold text-red-500">Tu acceso está suspendido</h4>
-            <p className="text-sm text-[#888888]">Reactiva tu plan para continuar gestionando tu negocio.</p>
-          </div>
-        </div>
+        </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-start">
         {/* Current Plan Card */}
-        <div className="card space-y-6 relative overflow-hidden">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#00C896]/10 rounded-2xl flex items-center justify-center border border-[#00C896]/20">
-              <ShieldCheck className="w-6 h-6 text-[#00C896]" />
+        <Card padding="lg" variant="elevated" className="relative overflow-hidden group border-[var(--accent)]/20">
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--accent)]/5 rounded-full blur-3xl group-hover:bg-[var(--accent)]/10 transition-colors" />
+          
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-14 h-14 bg-[var(--accent-subtle)] rounded-2xl flex items-center justify-center border border-[var(--accent)]/20 shadow-inner">
+              <Zap className="w-7 h-7 text-[var(--accent)]" />
             </div>
             <div>
-              <p className="text-sm text-[#888888]">Plan Actual</p>
-              <h3 className="text-xl font-bold">Velora Pure</h3>
+              <p className="text-[10px] font-bold text-[var(--accent)] uppercase tracking-widest mb-1">Plan Premium</p>
+              <h3 className="text-2xl font-bold text-[var(--text-primary)]">Velora Pure</h3>
             </div>
           </div>
 
-          <div className="space-y-4 py-4 border-y border-[#2A2A2A]">
-            <PlanFeature label="Clientes ilimitados" />
-            <PlanFeature label="Servicios ilimitados" />
-            <PlanFeature label="Recordatorios por WhatsApp" />
-            <PlanFeature label="Reportes PDF" />
-            <PlanFeature label="Notificaciones por email" />
-            <PlanFeature label="Soporte por WhatsApp" />
+          <div className="space-y-4 py-8 border-y border-[var(--border)-soft]">
+            <PlanFeature label="Clientes y Prospectos Ilimitados" />
+            <PlanFeature label="Servicios y Agenda Ilimitada" />
+            <PlanFeature label="Recordatorios Auto-WhatsApp" />
+            <PlanFeature label="Reportes de Nómina PDF" />
+            <PlanFeature label="Dashboard de Métricas Real-time" />
+            <PlanFeature label="Soporta Prioritario 24/7" />
           </div>
 
-          <div className="space-y-2">
-            <p className="text-[#888888] text-sm">Estado del plan:</p>
-            <div className="flex items-center gap-3">
-              <span className={cn(
-                "w-3 h-3 rounded-full shadow-[0_0_8px]",
-                isActive ? "bg-[#00C896] shadow-[#00C896]" : 
-                (isCanceled || isPastDue) ? "bg-red-500 shadow-red-500" :
-                "bg-[#FFB800] shadow-[#FFB800]"
+          <div className="py-8 space-y-3">
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest px-1">Estado de la suscripción</p>
+            <div className="flex items-center gap-3 bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)]">
+              <div className={cn(
+                "w-3 h-3 rounded-full animate-pulse",
+                isActive ? "bg-[var(--success)] shadow-[0_0_12px_rgba(52,211,153,0.5)]" : 
+                (isCanceled || isPastDue) ? "bg-[var(--danger)] shadow-[0_0_12px_rgba(248,113,113,0.5)]" :
+                "bg-[var(--warning)] shadow-[0_0_12px_rgba(251,191,36,0.5)]"
               )} />
-              <span className="font-bold text-lg">
-                {isActive ? 'Plan Activo' : isCanceled ? 'Cancelado' : 'Pendiente de activar'}
+              <span className="font-bold text-[var(--text-primary)]">
+                {isActive ? 'Suscripción Activa' : isCanceled ? 'Suscripción Cancelada' : 'Pendiente de Pago'}
               </span>
             </div>
           </div>
 
           {!isActive ? (
-            <button 
+            <Button 
               onClick={handleActivatePlan}
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
+              size="lg"
+              className="w-full h-14 text-sm font-bold shadow-[0_8px_30px_rgb(139,92,246,0.3)]"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
                   <CreditCard className="w-5 h-5" />
-                  <span>{isCanceled ? 'Reactivar plan' : 'Activar mi plan — $229/mes'}</span>
-                  <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span>{isCanceled ? 'Reactivar Suscripción' : 'Activar Plan — $229/mes'}</span>
+                  <ExternalLink className="w-4 h-4 ml-1 opacity-60" />
                 </>
               )}
-            </button>
+            </Button>
           ) : (
             <a 
               href="https://app.lemonsqueezy.com/my-orders"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full btn-secondary flex items-center justify-center gap-2 mt-4"
+              className="block"
             >
-              <span>Gestionar suscripción</span>
-              <ExternalLink className="w-4 h-4" />
+              <Button variant="secondary" size="lg" className="w-full h-14 border-[var(--border-soft)]">
+                <span>Centro de Facturación</span>
+                <ExternalLink className="w-4 h-4" />
+              </Button>
             </a>
           )}
-        </div>
+        </Card>
 
         {/* Billing Info Columns */}
         <div className="space-y-6">
-          <section className="card space-y-4">
-            <h3 className="font-bold border-b border-[#2A2A2A] pb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> Facturación
+          <Card padding="md" variant="subtle" className="space-y-6 border-[var(--border-soft)]">
+            <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-sm uppercase tracking-widest px-1">
+              <Calendar className="w-4 h-4 text-[var(--accent)]" /> Detalle de Ciclo
             </h3>
-            <div className="p-4 bg-[#111] rounded-xl border border-[#2A2A2A]">
-              <p className="text-sm text-[#888888]">Próximo cobro:</p>
-              <p className="text-xl font-bold text-white">
-                {isActive ? 'Gestionado por Lemon Squeezy' : '--'}
+            <div className="p-5 bg-[var(--bg-secondary)]/50 rounded-2xl border border-[var(--border)]">
+              <p className="text-[11px] font-bold text-[var(--text-secondary)] mb-2 uppercase">Próximo Cobro</p>
+              <p className="text-2xl font-mono font-bold text-[var(--text-primary)]">
+                {isActive ? 'Gestionado en portal' : 'Suscripción inactiva'}
               </p>
             </div>
-          </section>
-
-          <section className="card space-y-4 opacity-50">
-            <h3 className="font-bold border-b border-[#2A2A2A] pb-4 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Seguridad
-            </h3>
-            <div className="py-4 text-sm text-[#888888]">
-              Todas las facturas y pagos se gestionan a través de Lemon Squeezy para tu seguridad y cumplimiento.
+            <div className="flex gap-4">
+               <div className="flex-1 p-4 bg-[var(--bg-secondary)]/30 rounded-xl border border-[var(--border)]">
+                  <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase mb-1">Moneda</p>
+                  <p className="text-sm font-bold text-[var(--text-secondary)]">USD / Mensual</p>
+               </div>
+               <div className="flex-1 p-4 bg-[var(--bg-secondary)]/30 rounded-xl border border-[var(--border)]">
+                  <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase mb-1">Impuestos</p>
+                  <p className="text-sm font-bold text-[var(--text-secondary)]">Incluidos</p>
+               </div>
             </div>
-          </section>
+          </Card>
+
+          <Card padding="md" variant="subtle" className="bg-[var(--bg-card)]/30 border-[var(--border-soft)]">
+            <h3 className="font-bold text-[var(--text-secondary)] flex items-center gap-2 text-[11px] uppercase tracking-widest px-1 mb-4">
+              <Lock className="w-4 h-4" /> Seguridad de Pago
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed px-1">
+              Tus datos financieros nunca tocan nuestros servidores. Velora utiliza Lemon Squeezy (Merchant of Record) 
+              para procesar pagos de forma segura cumpliendo con estándares PCI DSS globales.
+            </p>
+          </Card>
         </div>
       </div>
     </div>
@@ -169,9 +191,12 @@ export default function Billing() {
 
 function PlanFeature({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-3">
-      <CheckCircle2 className="w-4 h-4 text-[#00C896]" />
-      <span className="text-sm text-[#F5F5F5]">{label}</span>
+    <div className="flex items-center gap-3.5 group">
+      <div className="w-5 h-5 rounded-full bg-[var(--success)]/10 flex items-center justify-center shrink-0 border border-[var(--success)]/20 animate-in zoom-in duration-300">
+        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--success)]" />
+      </div>
+      <span className="text-sm text-[var(--text-secondary)] font-medium group-hover:text-[var(--text-primary)] transition-colors">{label}</span>
     </div>
   );
 }
+

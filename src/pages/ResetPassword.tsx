@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { Lock, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -34,57 +39,72 @@ export default function ResetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4 text-center">
-        <div className="card max-w-md w-full py-12">
-          <div className="w-16 h-16 bg-[#00C896]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-8 h-8 text-[#00C896]" />
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 text-center">
+        <Card padding="lg" variant="elevated" className="max-w-[440px] w-full py-16 flex flex-col items-center gap-8 shadow-2xl">
+          <div className="w-24 h-24 bg-[var(--success)]/10 rounded-full flex items-center justify-center border border-[var(--success)]/20 shadow-[0_0_40px_rgba(52,211,153,0.1)]">
+            <CheckCircle2 className="w-12 h-12 text-[var(--success)]" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">¡Contraseña Cambiada!</h1>
-          <p className="text-[#888888] mb-8">Serás redirigido al login en unos segundos...</p>
-          <button onClick={() => navigate('/login')} className="btn-primary w-full">Ir al Login ahora</button>
-        </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">¡Contraseña Cambiada!</h1>
+            <p className="text-[var(--text-secondary)] mt-2">Tu seguridad ha sido actualizada con éxito. Serás redirigido al login.</p>
+          </div>
+          <Button onClick={() => navigate('/login')} className="w-full h-14 mt-4">
+            Volver al Inicio ahora
+          </Button>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Nueva Contraseña</h1>
-          <p className="text-[#888888] mt-2">Ingresa tu nueva clave de acceso</p>
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+       {/* Background Decoration */}
+      <div className="absolute top-[-5%] left-[-5%] w-[30%] h-[30%] bg-[var(--accent)]/5 rounded-full blur-[100px]" />
+      
+      <div className="w-full max-w-[440px] relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <div className="mb-10 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 text-[var(--accent-light)] mb-4">
+            <Sparkles className="w-5 h-5" />
+            <span className="font-bold uppercase tracking-[0.3em] text-xs">Security System</span>
+          </div>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Nueva Contraseña</h1>
+          <p className="text-[var(--text-secondary)] text-sm">Define una clave segura para tu cuenta</p>
         </div>
 
-        <div className="card shadow-2xl">
-          <form onSubmit={handleReset} className="space-y-6">
+        <Card padding="lg" variant="elevated" className="border-[var(--border)-soft]/50 shadow-2xl">
+          <form onSubmit={handleReset} className="space-y-8">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#888888]">Nueva Contraseña</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-[#888888]" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  className="input-field w-full pl-10 pr-10"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+              <Input 
+                label="Nueva Contraseña"
+                placeholder="Mínimo 6 caracteres"
+                type={showPassword ? 'text' : 'password'}
+                icon={Lock}
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+              <div className="flex justify-end pr-1">
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-[#888888]"
+                  className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--accent-light)] uppercase tracking-widest transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? 'Ocultar' : 'Ver Contraseña'}
                 </button>
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Restablecer Contraseña'}
-            </button>
+            <Button 
+               type="submit" 
+               disabled={loading || !password} 
+               className="w-full h-14 shadow-lg shadow-[var(--accent)]/10"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Actualizar y Entrar'}
+            </Button>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );
 }
+

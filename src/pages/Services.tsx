@@ -3,26 +3,28 @@ import { useLocation } from 'react-router-dom';
 import { 
   Plus, 
   Search, 
-  Calendar, 
-  DollarSign,
   Clock,
-  Users,
   CheckCircle2,
   Trash2,
-  Info,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardList
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, formatDate, cn } from '../lib/utils';
-import { StatusBadge } from '../components/StatusBadge';
-import { Modal } from '../components/Modal';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Skeleton } from '../components/Skeleton';
-import { EmptyState } from '../components/EmptyState';
 import toast from 'react-hot-toast';
 import { generateMonthlyPDF } from '../lib/pdf';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { EmptyState } from '../components/EmptyState';
 
 interface Service {
   id: string;
@@ -91,7 +93,6 @@ export default function Services() {
     if (!business) return;
     setLoading(true);
     try {
-      // Fetch Clients for the dropdown
       const { data: clientsData } = await supabase
         .from('clients')
         .select('id, name, notes')
@@ -109,7 +110,6 @@ export default function Services() {
       setClients(clientsData || []);
       setActiveEmployees(employeesData || []);
 
-      // Fetch Services
       let query = supabase
         .from('services')
         .select(`
@@ -201,129 +201,118 @@ export default function Services() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Servicios</h1>
-          <p className="text-[#888888]">Registro y control de trabajos realizados</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Servicios</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Registro y control de trabajos realizados</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button 
+          <Button 
+            variant="secondary"
             onClick={handleDownloadPDF}
-            disabled={isGeneratingPdf}
-            className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2 h-10"
+            loading={isGeneratingPdf}
+            className="h-11"
           >
             <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Reporte PDF</span>
-          </button>
-          <button 
+            Reporte PDF
+          </Button>
+          <Button 
             onClick={() => setIsModalOpen(true)}
-            className="btn-primary flex items-center justify-center gap-2 h-10"
+            className="h-11"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Registrar Trabajo</span>
-            <span className="sm:hidden">Registrar</span>
-          </button>
+            Registrar Trabajo
+          </Button>
         </div>
       </header>
 
       {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)]">
-        <div className="flex items-center gap-2 bg-[var(--bg-primary)] px-4 py-2.5 rounded-lg border border-[var(--border)] w-full md:w-96">
-          <Search className="w-5 h-5 text-[var(--text-secondary)]" />
-          <input 
-            type="text" 
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-secondary)] p-4 rounded-[16px] border border-[var(--border)]">
+        <div className="w-full md:w-96">
+          <Input 
+            icon={Search}
             placeholder="Buscar por cliente..." 
-            className="bg-transparent border-none outline-none text-[var(--text-primary)] text-sm w-full placeholder-[var(--text-secondary)]"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
-          <button 
-            onClick={() => setFilter('all')}
-            className={cn("px-4 py-2 rounded-lg text-sm", filter === 'all' ? "bg-[var(--accent)] text-white shadow-[0_0_10px_rgba(139,92,246,0.2)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}
-          >
-            Todos
-          </button>
-          <button 
-            onClick={() => setFilter('pending')}
-            className={cn("px-4 py-2 rounded-lg text-sm", filter === 'pending' ? "bg-[var(--warning)]/20 text-[var(--warning)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}
-          >
-            Pendientes
-          </button>
-          <button 
-            onClick={() => setFilter('paid')}
-            className={cn("px-4 py-2 rounded-lg text-sm", filter === 'paid' ? "bg-[var(--success)]/20 text-[var(--success)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}
-          >
-            Pagados
-          </button>
+        <div className="flex bg-[var(--bg-primary)] p-1 rounded-[12px] border border-[var(--border)]">
+          <FilterButton label="Todos" active={filter === 'all'} onClick={() => setFilter('all')} />
+          <FilterButton label="Pendientes" active={filter === 'pending'} onClick={() => setFilter('pending')} />
+          <FilterButton label="Pagados" active={filter === 'paid'} onClick={() => setFilter('paid')} />
         </div>
       </div>
 
       {loading ? (
         <div className="space-y-4">
-          {[1,2,3,4,5].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}
+          {[1,2,3,4,5].map(i => <div key={i} className="h-20 bg-[var(--bg-card)] rounded-xl animate-pulse" />)}
         </div>
       ) : filteredServices.length === 0 ? (
         <EmptyState 
-          icon={Clock}
+          icon={ClipboardList}
           title="No hay servicios"
           description={search ? "No se encontraron resultados" : "Registra tu primer trabajo para comenzar el historial."}
         />
       ) : (
-        <div className="card !p-0 overflow-hidden">
+        <Card padding="none" className="overflow-hidden border border-[var(--border)]">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                  <th className="px-6 py-4 section-title">Cliente</th>
-                  <th className="px-6 py-4 section-title">Fecha</th>
-                  <th className="px-6 py-4 section-title">Empleado</th>
-                  <th className="px-6 py-4 section-title text-right">Monto</th>
-                  <th className="px-6 py-4 section-title">Estado</th>
-                  <th className="px-6 py-4 section-title text-right">Acciones</th>
+                <tr className="bg-[var(--bg-secondary)]/50 border-b border-[var(--border)]">
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Cliente</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Equipo</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Monto</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Estado</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
                 {filteredServices.map((s) => (
-                  <tr key={s.id} className="list-row group">
+                  <tr key={s.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
                     <td className="px-6 py-4">
                       <p className="font-bold text-[var(--text-primary)]">{s.clients?.name}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{formatDate(s.date)}</td>
+                    <td className="px-6 py-4 text-sm text-[var(--text-secondary)] font-medium">{formatDate(s.date)}</td>
                     <td className="px-6 py-4">
                       {s.employees ? (
-                        <span className="text-sm font-medium text-[var(--accent)]">{s.employees.name}</span>
+                        <Badge variant="info" className="px-2 py-0.5">{s.employees.name}</Badge>
                       ) : (
-                        <span className="text-sm text-[var(--text-secondary)]">—</span>
+                        <span className="text-xs text-[var(--text-muted)] font-medium">No asignado</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 amount text-right text-[var(--text-primary)]">{formatCurrency(s.amount)}</td>
+                    <td className="px-6 py-4 font-mono font-bold text-right text-[var(--text-primary)]">{formatCurrency(s.amount)}</td>
                     <td className="px-6 py-4">
-                      <StatusBadge status={s.status} />
+                      <Badge variant={s.status === 'paid' ? 'success' : 'warning'}>
+                        {s.status === 'paid' ? 'Pagado' : 'Pendiente'}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
                           onClick={() => handleToggleStatus(s.id, s.status)}
                           className={cn(
-                            "p-2 rounded-lg transition-all",
-                            s.status === 'pending' ? "text-[var(--success)] hover:bg-[var(--success)]/10" : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                            "h-8 w-8 p-0",
+                            s.status === 'pending' ? "text-[var(--success)] hover:bg-[var(--success)]/10" : "text-[var(--text-muted)]"
                           )}
                         >
                           <CheckCircle2 className="w-5 h-5" />
-                        </button>
-                        <button 
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
                           onClick={() => {
                             setServiceToDelete(s.id);
                             setIsConfirmOpen(true);
                           }}
-                          className="p-2 text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg transition-all"
+                          className="text-[var(--danger)] hover:bg-[var(--danger)]/10 h-8 w-8 p-0"
                         >
                           <Trash2 className="w-5 h-5" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -331,7 +320,7 @@ export default function Services() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Modal Registro */}
@@ -340,133 +329,107 @@ export default function Services() {
         onClose={() => setIsModalOpen(false)} 
         title="Registrar Nuevo Trabajo"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {formData.client_id && clients.find(c => c.id === formData.client_id)?.notes && (
             <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-              <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-xs font-bold text-[var(--warning)] uppercase tracking-widest">Nota del Cliente</p>
-                <p className="text-sm text-[var(--text-primary)]">{clients.find(c => c.id === formData.client_id)?.notes}</p>
+                <p className="text-[10px] font-bold text-[var(--warning)] uppercase tracking-widest">Nota Importante del Cliente</p>
+                <p className="text-sm text-[var(--text-primary)] leading-relaxed">{clients.find(c => c.id === formData.client_id)?.notes}</p>
               </div>
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Users className="w-4 h-4" /> Cliente
-            </label>
-            <select 
-              required
-              className="input-field w-full"
-              value={formData.client_id}
-              onChange={e => setFormData({...formData, client_id: e.target.value})}
-            >
-              <option value="">Selecciona un cliente</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
+          <Select 
+            label="Cliente"
+            required
+            value={formData.client_id}
+            onChange={e => setFormData({...formData, client_id: e.target.value})}
+          >
+            <option value="">Selecciona un cliente</option>
+            {clients.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </Select>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-                <DollarSign className="w-4 h-4" /> Monto ($)
-              </label>
-              <input 
-                type="number" 
-                required
-                placeholder="120"
-                className="input-field w-full"
-                value={formData.amount}
-                onChange={e => setFormData({...formData, amount: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Fecha
-              </label>
-              <input 
-                type="date" 
-                required
-                className="input-field w-full"
-                value={formData.date}
-                onChange={e => setFormData({...formData, date: e.target.value})}
-              />
-            </div>
+            <Input 
+              label="Monto ($)"
+              type="number" 
+              required
+              placeholder="120"
+              value={formData.amount}
+              onChange={e => setFormData({...formData, amount: e.target.value})}
+            />
+            <Input 
+              label="Fecha"
+              type="date" 
+              required
+              value={formData.date}
+              onChange={e => setFormData({...formData, date: e.target.value})}
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Clock className="w-4 h-4" /> Estado Inicial
-            </label>
+            <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Estado del Pago</label>
             <div className="flex gap-4">
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, status: 'pending'})}
                 className={cn(
-                  "flex-1 p-3 rounded-xl border transition-all flex items-center justify-center gap-2",
-                  formData.status === 'pending' ? "bg-[#FFB800]/10 border-[#FFB800] text-[#FFB800]" : "bg-[#111] border-[#2A2A2A] text-[#888888]"
+                  "flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-1",
+                  formData.status === 'pending' 
+                    ? "bg-[var(--warning)]/10 border-[var(--warning)] text-[var(--warning)] shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] grayscale hover:grayscale-0"
                 )}
               >
-                <Clock className="w-4 h-4" /> Pendiente
+                <Clock className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-wider">Pendiente</span>
               </button>
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, status: 'paid'})}
                 className={cn(
-                  "flex-1 p-3 rounded-xl border transition-all flex items-center justify-center gap-2",
-                  formData.status === 'paid' ? "bg-[#00C896]/10 border-[#00C896] text-[#00C896]" : "bg-[#111] border-[#2A2A2A] text-[#888888]"
+                  "flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-1",
+                  formData.status === 'paid' 
+                    ? "bg-[var(--success)]/10 border-[var(--success)] text-[var(--success)] shadow-[0_0_20px_rgba(52,211,153,0.1)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] grayscale hover:grayscale-0"
                 )}
               >
-                <CheckCircle2 className="w-4 h-4" /> Pagado
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-wider">Pagado</span>
               </button>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Users className="w-4 h-4" /> Empleado Asignado (Opcional)
-            </label>
-            <select 
-              className="input-field w-full"
-              value={formData.assigned_employee_id}
-              onChange={e => setFormData({...formData, assigned_employee_id: e.target.value})}
-            >
-              <option value="">Sin asignar</option>
-              {activeEmployees.map(e => (
-                <option key={e.id} value={e.id}>{e.name}</option>
-              ))}
-            </select>
-          </div>
+          <Select 
+            label="Empleado Asignado (Opcional)"
+            value={formData.assigned_employee_id}
+            onChange={e => setFormData({...formData, assigned_employee_id: e.target.value})}
+          >
+            <option value="">Sin asignar</option>
+            {activeEmployees.map(e => (
+              <option key={e.id} value={e.id}>{e.name}</option>
+            ))}
+          </Select>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Info className="w-4 h-4" /> Notas adicionales
-            </label>
+          <div className="space-y-1.5">
+            <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Notas del Trabajo</label>
             <textarea 
               placeholder="Ej: Solo primer piso, trajo sus químicos..."
-              className="input-field w-full h-24 resize-none"
+              className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all h-24 resize-none"
               value={formData.notes}
               onChange={e => setFormData({...formData, notes: e.target.value})}
             />
           </div>
 
           <div className="flex gap-4 pt-4">
-            <button 
-              type="button" 
-              onClick={() => setIsModalOpen(false)}
-              className="flex-1 px-4 py-3 rounded-xl border border-[#2A2A2A] font-semibold text-[#888888] hover:bg-[#2A2A2A] transition-all"
-            >
+            <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)} className="flex-1">
               Cancelar
-            </button>
-            <button 
-              type="submit" 
-              className="flex-1 btn-primary"
-              disabled={!formData.client_id || !formData.amount}
-            >
+            </Button>
+            <Button type="submit" className="flex-1" disabled={!formData.client_id || !formData.amount}>
               Registrar Trabajo
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>
@@ -475,11 +438,28 @@ export default function Services() {
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
-        title="¿Eliminar servicio?"
-        description="Esta acción eliminará el registro de este servicio permanentemente."
+        title="¿Eliminar registro de servicio?"
+        description="Esta acción eliminará permanentemente la información de este trabajo y no se podrá recuperar."
         danger
-        confirmLabel="Eliminar"
+        confirmLabel="Eliminar Registro"
       />
     </div>
   );
 }
+
+function FilterButton({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={cn(
+        "px-5 py-2 rounded-[10px] text-sm font-semibold transition-all",
+        active 
+          ? "bg-[var(--accent)] text-white shadow-[0_4px_12px_rgba(139,92,246,0.3)]" 
+          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+

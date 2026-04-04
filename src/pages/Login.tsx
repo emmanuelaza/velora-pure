@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,7 +19,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error('Ingresa tu email y contraseña');
+      toast.error('Por favor, ingresa tus credenciales');
       return;
     }
 
@@ -28,7 +33,6 @@ export default function Login() {
       if (loginError) throw loginError;
 
       if (user) {
-        // Verificar si existe el negocio
         const { data: business, error: bizError } = await supabase
           .from('businesses')
           .select('id')
@@ -46,7 +50,7 @@ export default function Login() {
         }
       }
     } catch (error: any) {
-      toast.error(error.message || 'Error al iniciar sesión');
+      toast.error(error.message || 'Error al autenticar');
     } finally {
       setLoading(false);
     }
@@ -54,7 +58,7 @@ export default function Login() {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      toast.error('Ingresa tu email para restablecer la contraseña');
+      toast.error('Escribe tu email para enviarte el enlace');
       return;
     }
 
@@ -64,82 +68,90 @@ export default function Login() {
       });
 
       if (error) throw error;
-      toast.success('Te enviamos un correo para restablecer tu contraseña');
+      toast.success('Se ha enviado un enlace a tu correo');
     } catch (error: any) {
-      toast.error(error.message || 'Error al procesar la solicitud');
+      toast.error(error.message || 'Error en la solicitud');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo Section */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="mb-4">
-            {/* Si existe logo.png se muestra, si no el texto con V verde */}
-            <LogoDisplay />
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Abstract Background Effects */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--accent)]/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[var(--success)]/5 rounded-full blur-[120px]" />
+      
+      <div className="w-full max-w-[440px] relative z-10 animate-in fade-in zoom-in-95 duration-700">
+        <div className="mb-10 flex flex-col items-center gap-4 text-center">
+          <LogoDisplay />
+          <div className="space-y-1">
+             <h2 className="text-sm font-bold text-[var(--accent-light)] uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+               <Sparkles className="w-3.5 h-3.5" />
+               Velora Pure
+             </h2>
+             <p className="text-[var(--text-secondary)] text-sm">Gestiona tu negocio de limpieza con elegancia</p>
           </div>
-          <p className="text-[var(--text-secondary)] text-sm">Empresas de limpieza latinas en EEUU</p>
         </div>
 
-        {/* Login Card */}
-        <div className="card p-8">
-          <h1 className="text-2xl font-bold mb-6 text-center text-[var(--text-primary)]">Iniciar Sesión</h1>
+        <Card padding="lg" variant="elevated" className="border-[var(--border)-soft]/50 shadow-2xl shadow-black/60">
+          <div className="mb-8">
+             <h1 className="text-2xl font-bold text-[var(--text-primary)]">¡Bienvenido!</h1>
+             <p className="text-sm text-[var(--text-muted)] mt-1">Ingresa tus datos para acceder</p>
+          </div>
           
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-[var(--text-secondary)]" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-field w-full pl-10"
-                  placeholder="ejemplo@correo.com"
-                />
-              </div>
-            </div>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <Input 
+              label="Correo Electrónico"
+              placeholder="nombre@empresa.com"
+              type="email"
+              icon={Mail}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Contraseña</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-[var(--text-secondary)]" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field w-full pl-10 pr-10"
-                  placeholder="••••••••"
-                />
+              <Input 
+                label="Contraseña"
+                placeholder="••••••••"
+                type={showPassword ? 'text' : 'password'}
+                icon={Lock}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+              <div className="flex justify-end pr-1">
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-[var(--text-secondary)] hover:text-white"
+                  className="text-[11px] font-bold text-[var(--text-muted)] hover:text-[var(--accent-light)] uppercase tracking-wider transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? 'Ocultar Password' : 'Ver Password'}
                 </button>
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 mt-4"
+              className="w-full h-14 mt-4 shadow-xl shadow-[var(--accent)]/10"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Iniciar sesión'}
-            </button>
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar al Dashboard'}
+            </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-8 pt-8 border-t border-[var(--border)-soft] text-center">
             <button
               onClick={handleForgotPassword}
-              className="text-sm text-[var(--accent)] hover:text-[var(--accent-light)] transition-colors"
+              className="text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all uppercase tracking-widest"
             >
               ¿Olvidaste tu contraseña?
             </button>
           </div>
-        </div>
+        </Card>
+        
+        <p className="mt-10 text-center text-[var(--text-muted)] text-[11px] uppercase tracking-widest font-mono">
+          © {new Date().getFullYear()} Velora Pure · All Rights Reserved
+        </p>
       </div>
     </div>
   );
@@ -150,9 +162,9 @@ function LogoDisplay() {
 
   if (logoError) {
     return (
-      <span className="text-3xl font-extrabold tracking-tight text-white">
-        <span className="text-[var(--accent)]">V</span>elora Pure
-      </span>
+      <div className="w-20 h-20 bg-[var(--accent)]/10 rounded-[22px] flex items-center justify-center border border-[var(--accent)]/20 shadow-inner">
+         <span className="text-4xl font-extrabold text-[var(--accent)]">V</span>
+      </div>
     );
   }
 
@@ -160,8 +172,9 @@ function LogoDisplay() {
     <img 
       src="/logo.png" 
       alt="Velora Pure" 
-      className="h-28 w-auto object-contain mb-2"
+      className="h-24 w-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
       onError={() => setLogoError(true)}
     />
   );
 }
+

@@ -17,11 +17,17 @@ import {
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, formatDateShort, getInitials, avatarColor, cn } from '../lib/utils';
-import { StatusBadge } from '../components/StatusBadge';
-import { Skeleton } from '../components/Skeleton';
-import { Modal } from '../components/Modal';
 import { generateMonthlyPDF } from '../lib/pdf';
 import toast from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Modal } from '../components/ui/Modal';
+import { MetricCard } from '../components/ui/MetricCard';
 
 interface DashboardStats {
   totalCobrado: number;
@@ -56,7 +62,6 @@ export default function Dashboard() {
   const [recentServices, setRecentServices] = useState<RecentService[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // New State variables
   const [fastServiceOpen, setFastServiceOpen] = useState(false);
   const [allClients, setAllClients] = useState<{id: string, name: string, notes?: string}[]>([]);
   const [activeEmployees, setActiveEmployees] = useState<{id: string, name: string}[]>([]);
@@ -114,7 +119,6 @@ export default function Dashboard() {
         hasClients: (clientesCount || 0) > 0
       });
 
-      // 2. Pending Debtors (Top 5)
       const { data: allPending } = await supabase
         .from('services')
         .select('amount, date, clients(id, name, phone)')
@@ -150,7 +154,6 @@ export default function Dashboard() {
           .slice(0, 5)
       );
 
-      // Smart Banner logic
       let pendingOver7Count = 0;
       Object.values(debtorsMap).forEach(d => {
          if (d.oldest_pending_days > 7) pendingOver7Count++;
@@ -162,7 +165,6 @@ export default function Dashboard() {
          setShowSmartBanner(false);
       }
 
-      // 3. Recent Activity (Last 8)
       const { data: recent } = await supabase
         .from('services')
         .select('id, date, amount, status, clients(name)')
@@ -203,7 +205,6 @@ export default function Dashboard() {
       setFastServiceData({ client_id: '', amount: '', status: 'pending', assigned_employee_id: '' });
       fetchDashboardData();
     } catch (err: any) {
-      // Offline fallback queue
       const queue = JSON.parse(localStorage.getItem(`offline_queue_${business.id}`) || '[]');
       queue.push({
         business_id: business.id,
@@ -235,159 +236,149 @@ export default function Dashboard() {
   const showOnboarding = stats && (!stats.hasClients || !stats.totalServicios || !stats.hasPaymentConfig) && localStorage.getItem(`onboarding_${business?.id}`) !== 'true';
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Buenos días, {business?.business_name || 'Negocio'} 👋</h1>
           <p className="text-[var(--text-secondary)] mt-1">Mira cómo va tu negocio este mes</p>
         </div>
         <div className="flex items-center flex-wrap gap-3 mt-4 md:mt-0">
-          <button 
+          <Button 
+            variant="secondary" 
             onClick={handleDownloadPDF}
-            disabled={isGeneratingPdf}
-            className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-2"
+            loading={isGeneratingPdf}
           >
             <FileText className="w-4 h-4" />
             Reporte PDF
-          </button>
-          <button 
+          </Button>
+          <Button 
             onClick={() => setFastServiceOpen(true)}
-            className="btn-primary flex items-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.2)]"
           >
             <Zap className="w-4 h-4" />
             <span className="hidden sm:inline">Servicio rápido</span>
             <span className="sm:hidden">Rápido</span>
-          </button>
+          </Button>
         </div>
       </header>
 
       {/* Smart Banner */}
       {showSmartBanner && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.2)] rounded-xl p-4 animate-in fade-in slide-in-from-top-2">
+        <Card variant="subtle" className="flex flex-col md:flex-row md:items-center justify-between border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.08)] py-3 px-5">
           <div className="flex items-center gap-3 text-[var(--warning)]">
             <AlertCircle className="w-6 h-6 shrink-0" />
-            <p className="text-sm font-medium">⚠️ Tienes {smartBannerCount} clientes con cobros de más de 7 días. Te enviamos un resumen por email.</p>
+            <p className="text-sm font-medium">Tienes {smartBannerCount} clientes con cobros de más de 7 días.</p>
           </div>
-          <div className="flex items-center gap-4 mt-3 md:mt-0 pl-9 md:pl-0">
+          <div className="flex items-center gap-4 mt-3 md:mt-0">
             <NavLink to="/pending" className="text-sm font-bold text-[var(--warning)] hover:underline whitespace-nowrap">Ver cobros →</NavLink>
             <button 
               onClick={() => {
                 setShowSmartBanner(false);
                 localStorage.setItem(`banner_${business?.id}`, new Date().toISOString().split('T')[0]);
               }}
-              className="text-[var(--warning)] opacity-60 hover:opacity-100 p-1"
+              className="text-[var(--warning)] opacity-60 hover:opacity-100 transition-opacity"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Onboarding Checklist */}
       {showOnboarding && stats && (
-        <div className="card border-[var(--accent)]/30 bg-[var(--accent-subtle)] p-6 md:p-8 animate-in slide-in-from-top-4">
+        <Card variant="elevated" padding="lg" className="border-[var(--accent)]/30">
           <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">¡Bienvenido a Velora Pure! 🚀</h2>
           <p className="text-[var(--text-secondary)] text-sm mb-6">Completa estos 3 pasos para empezar:</p>
           
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {stats.hasClients ? <CheckCircle2 className="w-6 h-6 text-[var(--accent)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)] bg-[#111]" />}
+                {stats.hasClients ? <CheckCircle2 className="w-6 h-6 text-[var(--success)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)]" />}
                 <p className={cn("font-medium", stats.hasClients ? "text-[var(--text-secondary)] line-through" : "text-[var(--text-primary)]")}>Agrega tu primer cliente</p>
               </div>
-              {!stats.hasClients && <button onClick={() => navigate('/clients')} className="text-sm text-[var(--accent)] font-medium hover:underline">Agregar cliente →</button>}
+              {!stats.hasClients && <Button variant="ghost" size="sm" onClick={() => navigate('/clients')}>Agregar →</Button>}
             </div>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {stats.totalServicios > 0 ? <CheckCircle2 className="w-6 h-6 text-[var(--accent)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)] bg-[#111]" />}
+                {stats.totalServicios > 0 ? <CheckCircle2 className="w-6 h-6 text-[var(--success)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)]" />}
                 <p className={cn("font-medium", stats.totalServicios > 0 ? "text-[var(--text-secondary)] line-through" : "text-[var(--text-primary)]")}>Registra tu primer servicio</p>
               </div>
-              {!stats.totalServicios && <button onClick={() => setFastServiceOpen(true)} className="text-sm text-[var(--accent)] font-medium hover:underline">Registrar servicio →</button>}
+              {!stats.totalServicios && <Button variant="ghost" size="sm" onClick={() => setFastServiceOpen(true)}>Registrar →</Button>}
             </div>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {stats.hasPaymentConfig ? <CheckCircle2 className="w-6 h-6 text-[var(--accent)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)] bg-[#111]" />}
+                {stats.hasPaymentConfig ? <CheckCircle2 className="w-6 h-6 text-[var(--success)]" /> : <div className="w-6 h-6 rounded-full border-2 border-[var(--border)]" />}
                 <p className={cn("font-medium", stats.hasPaymentConfig ? "text-[var(--text-secondary)] line-through" : "text-[var(--text-primary)]")}>Configura tus métodos de pago</p>
               </div>
-              {!stats.hasPaymentConfig && <button onClick={() => navigate('/settings')} className="text-sm text-[var(--accent)] font-medium hover:underline">Ir a configuración →</button>}
+              {!stats.hasPaymentConfig && <Button variant="ghost" size="sm" onClick={() => navigate('/settings')}>Configurar →</Button>}
             </div>
           </div>
           
           {stats.hasClients && stats.totalServicios > 0 && stats.hasPaymentConfig && (
-            <button 
+            <Button 
               onClick={() => {
                 localStorage.setItem(`onboarding_${business?.id}`, 'true');
-                navigate('/onboarding'); // O opcionalmente dispararlo aquí si tienes lógica en la DB
-                // Para simplificar, recargamos el fetch envés de navegar, de acuerdo a nuestra spec si solo se cierra.
-                // Sin embargo el prompt pidio: "El email de bienvenida llámalo desde el componente Onboarding.tsx directamente después de guardar en Supabase en el paso 3."
-                // Wait, hay un componente Onboarding.tsx? Yo no he visto ninguno, veamos
                 fetchDashboardData(); 
               }}
-              className="mt-8 w-full py-3 bg-[var(--accent)] text-white rounded-lg font-bold hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent-subtle)]"
+              className="mt-8 w-full"
+              size="lg"
             >
               ¡Comenzar a usar Velora Pure!
-            </button>
+            </Button>
           )}
-        </div>
+        </Card>
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          label="Cobrado este mes" 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <MetricCard 
+          title="Cobrado este mes" 
           value={formatCurrency(stats?.totalCobrado || 0)} 
           icon={DollarSign}
-          trend="En este periodo"
-          color="success"
+          trend={{ value: 12, isPositive: true }}
         />
-        <StatCard 
-          label="Pendiente total" 
+        <MetricCard 
+          title="Pendiente total" 
           value={formatCurrency(stats?.totalPendiente || 0)} 
           icon={Clock}
-          trend={`${pendingDebtors.length} clientes deben`}
-          color="warning"
+          trend={{ value: 5, isPositive: false }}
         />
-        <StatCard 
-          label="Clientes activos" 
+        <MetricCard 
+          title="Clientes activos" 
           value={stats?.clientesActivos.toString() || '0'} 
           icon={Users}
-          trend="Registrados"
-          color="accent"
         />
-        <StatCard 
-          label="Servicios este mes" 
+        <MetricCard 
+          title="Servicios este mes" 
           value={stats?.serviciosMes.toString() || '0'} 
           icon={ClipboardList}
-          trend="Completados"
-          color="blue"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Pending Debts Column */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-bold flex items-center gap-2 text-[var(--text-primary)]">
               <AlertCircle className="w-5 h-5 text-[var(--warning)]" />
               Cobros pendientes
             </h2>
-            <NavLink to="/pending" className="text-sm text-[var(--accent)] hover:underline">Ver todos →</NavLink>
+            <NavLink to="/pending" className="text-sm font-semibold text-[var(--accent)] hover:underline">Ver todos →</NavLink>
           </div>
           
-          <div className="card space-y-2 p-4 min-h-[300px]">
+          <Card className="divide-y divide-[var(--border)]">
             {pendingDebtors.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[200px] text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 className="w-12 h-12 text-[var(--success)] mb-3 opacity-20" />
                 <p className="text-[var(--text-secondary)]">✅ No tienes cobros pendientes</p>
               </div>
             ) : (
               pendingDebtors.map(debtor => (
-                <div key={debtor.client_id} className="flex items-center justify-between p-3 rounded-lg list-row group">
-                  <div className="flex items-center gap-3">
+                <div key={debtor.client_id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 group">
+                  <div className="flex items-center gap-4">
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
                       style={{ backgroundColor: `${avatarColor(debtor.name)}20`, color: avatarColor(debtor.name) }}
                     >
                       {getInitials(debtor.name)}
@@ -397,17 +388,17 @@ export default function Dashboard() {
                       <p className="text-xs text-[var(--text-secondary)]">Atraso de {debtor.oldest_pending_days} días</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-right shrink-0">
+                  <div className="flex items-center gap-4 text-right">
                     <div>
                       <p className={cn(
-                        "amount text-right text-[16px]",
+                        "font-mono text-right text-[16px] font-semibold",
                         debtor.oldest_pending_days > 30 ? "text-[var(--danger)]" : debtor.oldest_pending_days > 14 ? "text-[var(--warning)]" : "text-[var(--text-primary)]"
                       )}>
                         {formatCurrency(debtor.total_pending)}
                       </p>
                       <button 
                         onClick={() => window.open(`https://wa.me/1${debtor.phone.replace(/\D/g,'')}`, '_blank')}
-                        className="text-[var(--success)] p-1.5 hover:bg-[var(--success)]/10 rounded-lg transition-colors inline-block mt-1 border border-transparent hover:border-[var(--success)]"
+                        className="text-[var(--success)] opacity-60 hover:opacity-100 transition-opacity mt-1"
                         title="Enviar mensaje por WhatsApp"
                       >
                         <MessageCircle className="w-4 h-4" />
@@ -417,141 +408,117 @@ export default function Dashboard() {
                 </div>
               ))
             )}
-          </div>
+          </Card>
         </section>
 
         {/* Recent Activity Column */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-bold flex items-center gap-2 text-[var(--text-primary)]">
               <ClipboardList className="w-5 h-5 text-[var(--accent)]" />
               Actividad reciente
             </h2>
-            <NavLink to="/services" className="text-sm text-[var(--accent)] hover:underline">Ver servicios →</NavLink>
+            <NavLink to="/services" className="text-sm font-semibold text-[var(--accent)] hover:underline">Ver servicios →</NavLink>
           </div>
 
-          <div className="card space-y-2 p-4 min-h-[300px]">
+          <Card className="divide-y divide-[var(--border)]">
             {recentServices.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[200px] text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                  <ClipboardList className="w-12 h-12 text-[var(--text-secondary)] mb-3 opacity-20" />
                  <p className="text-[var(--text-secondary)]">No hay servicios registrados aún</p>
               </div>
             ) : (
               recentServices.map(service => (
-                <div key={service.id} className="flex items-center justify-between p-3 rounded-lg list-row group">
-                  <div className="flex items-center gap-3">
-                    <div className="text-xs font-medium text-[var(--text-secondary)] w-12">{formatDateShort(service.date)}</div>
+                <div key={service.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 group">
+                  <div className="flex items-center gap-4">
+                    <div className="text-xs font-bold text-[var(--text-muted)] w-10 uppercase">{formatDateShort(service.date)}</div>
                     <div>
                       <p className="font-semibold text-sm text-[var(--text-primary)]">{service.client_name}</p>
-                      <p className="amount text-right text-[var(--text-primary)] hidden sm:block">{formatCurrency(service.amount)}</p>
+                      <p className="font-mono text-sm text-[var(--text-secondary)]">{formatCurrency(service.amount)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="amount sm:hidden">{formatCurrency(service.amount)}</span>
-                    <StatusBadge status={service.status} />
-                  </div>
+                  <Badge variant={service.status === 'paid' ? 'success' : 'warning'}>
+                    {service.status === 'paid' ? 'Pagado' : 'Pendiente'}
+                  </Badge>
                 </div>
               ))
             )}
-          </div>
+          </Card>
         </section>
       </div>
 
       {/* Fast Service Modal */}
-      <Modal isOpen={fastServiceOpen} onClose={() => setFastServiceOpen(false)} title="Servicio Rápido">
-        <form onSubmit={handleFastService} className="space-y-4">
+      <Modal isOpen={fastServiceOpen} onClose={() => setFastServiceOpen(false)} title="Registrar Servicio Rápido">
+        <form onSubmit={handleFastService} className="space-y-5">
           {fastServiceData.client_id && allClients.find(c => c.id === fastServiceData.client_id)?.notes && (
-            <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="p-4 bg-[var(--warning)]/5 border border-[var(--warning)]/20 rounded-xl flex gap-3">
               <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-[var(--warning)] uppercase tracking-widest">Nota del Cliente</p>
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-[var(--warning)] uppercase tracking-widest">Nota Importante</p>
                 <p className="text-sm text-[var(--text-primary)]">{allClients.find(c => c.id === fastServiceData.client_id)?.notes}</p>
               </div>
             </div>
           )}
 
+          <Select 
+            label="Seleccionar Cliente"
+            required
+            value={fastServiceData.client_id}
+            onChange={e => setFastServiceData({...fastServiceData, client_id: e.target.value})}
+          >
+            <option value="">Buscar cliente...</option>
+            {allClients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
+
+          <Input 
+            label="Monto del Servicio ($)"
+            type="number"
+            required
+            placeholder="0.00"
+            value={fastServiceData.amount}
+            onChange={e => setFastServiceData({...fastServiceData, amount: e.target.value})}
+          />
+
+          <Select 
+            label="Asignar Empleado (Opcional)"
+            value={fastServiceData.assigned_employee_id}
+            onChange={e => setFastServiceData({...fastServiceData, assigned_employee_id: e.target.value})}
+          >
+            <option value="">Sin asignar</option>
+            {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </Select>
+
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Cliente</label>
-            <select 
-              required
-              className="input-field w-full"
-              value={fastServiceData.client_id}
-              onChange={e => setFastServiceData({...fastServiceData, client_id: e.target.value})}
-            >
-              <option value="">Selecciona un cliente</option>
-              {allClients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Monto ($)</label>
-            <input 
-              type="number"
-              required
-              placeholder="e.g. 150"
-              className="input-field w-full"
-              value={fastServiceData.amount}
-              onChange={e => setFastServiceData({...fastServiceData, amount: e.target.value})}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Empleado Asignado (Opcional)</label>
-            <select 
-              className="input-field w-full"
-              value={fastServiceData.assigned_employee_id}
-              onChange={e => setFastServiceData({...fastServiceData, assigned_employee_id: e.target.value})}
-            >
-              <option value="">Sin asignar</option>
-              {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)] uppercase">Estado de Pago</label>
-            <div className="flex gap-4 pt-1">
+            <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Estado de Pago</label>
+            <div className="flex gap-3">
               <button 
                 type="button"
                 onClick={() => setFastServiceData({...fastServiceData, status: 'pending'})}
-                className={cn("flex-1 p-3 rounded-lg border transition-all text-sm font-bold flex items-center justify-center gap-2", fastServiceData.status === 'pending' ? "bg-[var(--warning)]/10 border-[var(--warning)] text-[var(--warning)]" : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]")}
+                className={cn(
+                  "flex-1 py-3 rounded-xl border text-sm font-bold transition-all",
+                  fastServiceData.status === 'pending' 
+                    ? "bg-[var(--warning)]/10 border-[var(--warning)] text-[var(--warning)] shadow-[0_0_12px_rgba(251,191,36,0.1)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]"
+                )}
               >PENDIENTE</button>
               <button 
                 type="button"
                 onClick={() => setFastServiceData({...fastServiceData, status: 'paid'})}
-                className={cn("flex-1 p-3 rounded-lg border transition-all text-sm font-bold flex items-center justify-center gap-2", fastServiceData.status === 'paid' ? "bg-[var(--success)]/10 border-[var(--success)] text-[var(--success)]" : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]")}
+                className={cn(
+                  "flex-1 py-3 rounded-xl border text-sm font-bold transition-all",
+                  fastServiceData.status === 'paid' 
+                    ? "bg-[var(--success)]/10 border-[var(--success)] text-[var(--success)] shadow-[0_0_12px_rgba(52,211,153,0.1)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]"
+                )}
               >PAGADO</button>
             </div>
           </div>
-          <button type="submit" className="w-full btn-primary py-3 mt-4 text-center">Registrar Trabajo</button>
+          
+          <div className="pt-4">
+            <Button type="submit" className="w-full" size="lg">Guardar Registro</Button>
+          </div>
         </form>
       </Modal>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon: Icon, trend, color = 'white' }: any) {
-  const colorMap: any = {
-    success: 'text-[var(--success)] border-[var(--success)]/20',
-    warning: 'text-[var(--warning)] border-[var(--warning)]/20',
-    accent: 'text-[var(--accent)] border-[var(--accent)]/20',
-    blue: 'text-[#60A5FA] border-[#60A5FA]/20', 
-    white: 'text-[var(--text-primary)] border-[var(--border)]'
-  };
-
-  return (
-    <div className={cn("card p-6 flex flex-col justify-between h-full bg-[var(--bg-secondary)] border-t-2 relative overflow-hidden", colorMap[color] || colorMap.white)}>
-      <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-        <Icon className="w-16 h-16" />
-      </div>
-      <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className={cn("p-2 rounded-lg bg-[var(--bg-primary)] border", colorMap[color])}>
-          <Icon className="w-5 h-5 opacity-90" />
-        </div>
-      </div>
-      <div className="relative z-10">
-        <p className="amount text-[32px] font-light tracking-tight">{value}</p>
-        <div className="flex flex-col mt-1">
-          <span className="font-bold text-sm text-[var(--text-primary)]">{label}</span>
-          <span className="text-[11px] font-medium text-[var(--text-secondary)] mt-0.5">{trend}</span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -560,16 +527,17 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <Skeleton className="w-48 h-8" />
-        <Skeleton className="w-64 h-4" />
+        <div className="w-48 h-8 bg-[var(--bg-card)] rounded-lg animate-pulse" />
+        <div className="w-64 h-4 bg-[var(--bg-card)] rounded-lg animate-pulse" />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Skeleton className="h-[300px] rounded-xl" />
-        <Skeleton className="h-[300px] rounded-xl" />
+        <div className="h-[400px] bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+        <div className="h-[400px] bg-[var(--bg-card)] rounded-2xl animate-pulse" />
       </div>
     </div>
   );
 }
+

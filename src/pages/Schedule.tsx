@@ -2,22 +2,26 @@ import { useEffect, useState } from 'react';
 import { 
   Calendar, 
   MapPin, 
-  CheckCircle2, 
-  CalendarDays,
-  List,
-  LayoutGrid,
   Plus,
   Users,
-  Clock,
-  Info,
+  CalendarDays,
+  LayoutGrid,
+  List,
+  CheckCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
 import { formatDate, cn } from '../lib/utils';
-import { Skeleton } from '../components/Skeleton';
-import { EmptyState } from '../components/EmptyState';
-import { Modal } from '../components/Modal';
 import toast from 'react-hot-toast';
+
+// New UI Components
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Modal } from '../components/ui/Modal';
+import { EmptyState } from '../components/EmptyState';
 
 interface Employee {
   id: string;
@@ -95,7 +99,6 @@ export default function Schedule() {
       setActiveEmployees(empData || []);
       setClients(clientData || []);
 
-      // Group by day
       const grouped: Record<string, ScheduledService[]> = {};
       (data || []).forEach((item: any) => {
         const day = item.scheduled_date;
@@ -118,20 +121,18 @@ export default function Schedule() {
 
   const handleComplete = async (service: ScheduledService) => {
     try {
-      // 1. Insertar en servicios reales (esto es una simplificación, en prod se pediría el monto)
       const { error: serviceError } = await supabase.from('services').insert({
         business_id: business?.id,
         client_id: service.client_id,
-        amount: 0, // Se asume que el usuario luego ajustará el precio o hay uno base
+        amount: 0,
         date: service.scheduled_date,
-        status: 'pending', // Queda como pendiente de pago
+        status: 'pending',
         assigned_employee_id: service.assigned_employee_id || null,
         notes: `Completado desde agenda: ${service.service_type}`
       });
 
       if (serviceError) throw serviceError;
 
-      // 2. Marcar como completado en agenda
       const { error: scheduleError } = await supabase
         .from('scheduled_services')
         .update({ status: 'completed' })
@@ -139,7 +140,7 @@ export default function Schedule() {
 
       if (scheduleError) throw scheduleError;
 
-      toast.success('Servicio marcado como completado y registrado');
+      toast.success('Servicio completado y registrado');
       fetchSchedule();
     } catch (error) {
       toast.error('Error al completar servicio');
@@ -147,46 +148,59 @@ export default function Schedule() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold">Agenda</h1>
-          <p className="text-[#888888]">Organiza los trabajos de las próximas semanas</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Agenda</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Organiza los trabajos de las próximas semanas</p>
         </div>
         
-        <div className="flex bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
-          <button 
-            onClick={() => setView('list')}
-            className={cn("px-4 py-2 rounded-lg text-sm flex items-center gap-2", view === 'list' ? "bg-[var(--accent)] text-white shadow-[0_0_10px_rgba(139,92,246,0.2)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}
-          >
-            <List className="w-4 h-4" />
-            Lista
-          </button>
-          <button 
-            onClick={() => setView('week')}
-            className={cn("px-4 py-2 rounded-lg text-sm flex items-center gap-2", view === 'week' ? "bg-[var(--accent)] text-white shadow-[0_0_10px_rgba(139,92,246,0.2)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]")}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            Semana
-          </button>
-        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex bg-[var(--bg-secondary)] p-1 rounded-[12px] border border-[var(--border)]">
+            <button 
+              onClick={() => setView('list')}
+              className={cn(
+                "px-4 py-2 rounded-[10px] text-sm font-semibold flex items-center gap-2 transition-all",
+                view === 'list' 
+                  ? "bg-[var(--accent)] text-white shadow-lg" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              )}
+            >
+              <List className="w-4 h-4" />
+              Lista
+            </button>
+            <button 
+              onClick={() => setView('week')}
+              className={cn(
+                "px-4 py-2 rounded-[10px] text-sm font-semibold flex items-center gap-2 transition-all",
+                view === 'week' 
+                  ? "bg-[var(--accent)] text-white shadow-lg" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              )}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              Mosaico
+            </button>
+          </div>
 
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center justify-center gap-2 h-10 px-6"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Agendar Trabajo</span>
-        </button>
+          <Button 
+            onClick={() => setIsModalOpen(true)}
+            size="lg"
+          >
+            <Plus className="w-5 h-5" />
+            Agendar Trabajo
+          </Button>
+        </div>
       </header>
 
       {loading ? (
-        <div className="space-y-8">
+        <div className="space-y-12">
           {[1,2].map(i => (
-            <div key={i} className="space-y-4">
-              <Skeleton className="w-32 h-6" />
-              <Skeleton className="h-24 rounded-2xl" />
-              <Skeleton className="h-24 rounded-2xl" />
+            <div key={i} className="space-y-6">
+              <div className="h-6 w-40 bg-[var(--bg-card)] rounded animate-pulse" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1,2,3].map(j => <div key={j} className="h-44 bg-[var(--bg-card)] rounded-[20px] animate-pulse" />)}
+              </div>
             </div>
           ))}
         </div>
@@ -199,68 +213,77 @@ export default function Schedule() {
           onAction={() => setIsModalOpen(true)}
         />
       ) : (
-        <div className="space-y-10">
+        <div className="space-y-12">
           {scheduled.map(group => (
-            <section key={group.day} className="space-y-4">
-              <div className="flex items-center gap-2 px-1">
-                <Calendar className="w-4 h-4 text-[var(--accent)]" />
-                <h2 className="section-title mt-1">
+            <section key={group.day} className="space-y-6">
+              <div className="flex items-center gap-3 px-1">
+                <div className="p-2 bg-[var(--accent-subtle)] rounded-lg">
+                  <Calendar className="w-5 h-5 text-[var(--accent)]" />
+                </div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">
                   {formatDate(group.day)}
                 </h2>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {group.items.map(item => (
-                  <div key={item.id} className="card group hover:border-[var(--accent)] transition-all relative overflow-hidden">
-                    {item.status === 'completed' && (
-                      <div className="absolute top-0 right-0 p-2 bg-[var(--success)]/10 text-[var(--success)]">
-                        <CheckCircle2 className="w-4 h-4" />
-                      </div>
-                    )}
-                    
+                  <Card 
+                    key={item.id} 
+                    padding="md"
+                    className="group relative flex flex-col border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <Badge variant={item.status === 'completed' ? 'success' : 'warning'}>
+                        {item.status === 'completed' ? 'Completado' : 'Pendiente'}
+                      </Badge>
+                      <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+                        {item.service_type || 'Limpieza'}
+                      </span>
+                    </div>
+
                     <div className="flex flex-col h-full space-y-4">
                       <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{item.service_type || 'Servicio de Limpieza'}</p>
-                          <span className={cn(
-                            "text-[10px] px-2 py-0.5 rounded-lg font-bold",
-                            item.status === 'pending' ? "bg-[var(--warning)]/10 text-[var(--warning)]" : "bg-[var(--success)]/10 text-[var(--success)]"
-                          )}>
-                            {item.status === 'completed' ? 'Completado' : 'Pendiente'}
-                          </span>
-                        </div>
                         <h3 className="font-bold text-lg text-[var(--text-primary)]">{item.clients?.name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-2">
-                          <MapPin className="w-4 h-4" />
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-2 font-medium">
+                          <MapPin className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                           <span className="truncate">{item.clients?.address}</span>
                         </div>
+                        
                         {item.employees && (
-                          <div className="flex items-center gap-2 text-xs text-[var(--accent)] mt-3 bg-[var(--accent)]/5 p-2 rounded-lg border border-[var(--accent)]/10">
-                            <Users className="w-3 h-3" />
-                            <span className="font-bold">{item.employees.name}</span>
+                          <div className="mt-4 flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
+                              <Users className="w-3.5 h-3.5 text-[var(--accent)]" />
+                            </div>
+                            <span className="text-xs font-bold text-[var(--accent-light)]">{item.employees.name}</span>
                           </div>
                         )}
                       </div>
 
                       {item.status === 'pending' && (
-                        <button 
+                        <Button 
+                          variant="secondary"
                           onClick={() => handleComplete(item)}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[var(--success)]/50 text-sm font-bold text-[var(--success)] hover:bg-[var(--success)]/10 transition-all mt-2"
+                          className="w-full h-11 border-[var(--success)]/20 hover:bg-[var(--success)]/5 text-[var(--success)]"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
-                          Completar
-                        </button>
+                          <CheckCircle className="w-4 h-4" />
+                          Marcar Completado
+                        </Button>
                       )}
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </section>
           ))}
         </div>
       )}
+
       {/* Modal Agendar */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Agendar Nuevo Trabajo">
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Agendar Nuevo Trabajo"
+      >
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!business) return;
@@ -280,70 +303,54 @@ export default function Schedule() {
           } catch (error: any) {
             toast.error(error.message);
           }
-        }} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Users className="w-4 h-4" /> Cliente
-            </label>
-            <select 
-              required
-              className="input-field w-full"
-              value={formData.client_id}
-              onChange={e => setFormData({...formData, client_id: e.target.value})}
-            >
-              <option value="">Selecciona un cliente</option>
-              {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
+        }} className="space-y-6">
+          <Select 
+            label="Cliente"
+            required
+            value={formData.client_id}
+            onChange={e => setFormData({...formData, client_id: e.target.value})}
+          >
+            <option value="">Selecciona un cliente</option>
+            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Fecha
-              </label>
-              <input 
-                type="date" 
-                required
-                className="input-field w-full"
-                value={formData.scheduled_date}
-                onChange={e => setFormData({...formData, scheduled_date: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-                <Info className="w-4 h-4" /> Tipo
-              </label>
-              <input 
-                type="text" 
-                required
-                className="input-field w-full"
-                placeholder="Ej: Limpieza profunda"
-                value={formData.service_type}
-                onChange={e => setFormData({...formData, service_type: e.target.value})}
-              />
-            </div>
+            <Input 
+              label="Fecha Programada"
+              type="date" 
+              required
+              value={formData.scheduled_date}
+              onChange={e => setFormData({...formData, scheduled_date: e.target.value})}
+            />
+            <Input 
+              label="Tipo de Servicio"
+              placeholder="Ej: Limpieza profunda"
+              required
+              value={formData.service_type}
+              onChange={e => setFormData({...formData, service_type: e.target.value})}
+            />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#888888] flex items-center gap-2">
-              <Users className="w-4 h-4" /> Empleado Asignado (Opcional)
-            </label>
-            <select 
-              className="input-field w-full"
-              value={formData.assigned_employee_id}
-              onChange={e => setFormData({...formData, assigned_employee_id: e.target.value})}
-            >
-              <option value="">Sin asignar</option>
-              {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
-          </div>
+          <Select 
+            label="Empleado Asignado (Opcional)"
+            value={formData.assigned_employee_id}
+            onChange={e => setFormData({...formData, assigned_employee_id: e.target.value})}
+          >
+            <option value="">Sin asignar</option>
+            {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </Select>
 
           <div className="flex gap-4 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-3 rounded-xl border border-[#2A2A2A] font-semibold text-[#888888]">Cancelar</button>
-            <button type="submit" className="flex-1 btn-primary" disabled={!formData.client_id || !formData.scheduled_date}>Agendar</button>
+            <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" className="flex-1" disabled={!formData.client_id || !formData.scheduled_date}>
+              Confirmar Agenda
+            </Button>
           </div>
         </form>
       </Modal>
     </div>
   );
 }
+
