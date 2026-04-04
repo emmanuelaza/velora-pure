@@ -16,13 +16,13 @@ import { formatCurrency, formatDate, cn } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { generateMonthlyPDF } from '../lib/pdf';
 
-// New UI Components
-import { Card } from '../components/ui/Card';
+// UI Components
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
+import { PageHeader } from '../components/ui/PageHeader';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EmptyState } from '../components/EmptyState';
 
@@ -201,35 +201,31 @@ export default function Services() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Servicios</h1>
-          <p className="text-[var(--text-secondary)] mt-1 font-medium">Registro y control de trabajos realizados</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button 
-            variant="secondary"
-            onClick={handleDownloadPDF}
-            loading={isGeneratingPdf}
-            className="h-11 bg-[var(--bg-secondary)] border-[var(--border)]"
-          >
-            <FileText className="w-4 h-4" />
-            Reporte PDF
-          </Button>
-          <Button 
-            onClick={() => setIsModalOpen(true)}
-            className="h-11 shadow-lg shadow-[var(--accent)]/10"
-          >
-            <Plus className="w-5 h-5" />
-            Registrar Trabajo
-          </Button>
-        </div>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="Servicios"
+        subtitle="Historial de todos los servicios"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="secondary"
+              onClick={handleDownloadPDF}
+              loading={isGeneratingPdf}
+            >
+              <FileText className="w-4 h-4" />
+              Reporte PDF
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="w-4 h-4" />
+              Registrar servicio
+            </Button>
+          </div>
+        }
+      />
 
-      {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-secondary)] p-4 rounded-[16px] border border-[var(--border)]">
-        <div className="w-full md:w-96">
+      {/* Search & Filters */}
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+        <div className="w-full md:w-80">
           <Input 
             icon={Search}
             placeholder="Buscar por cliente..." 
@@ -237,17 +233,16 @@ export default function Services() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-
-        <div className="flex bg-[var(--bg-primary)] p-1 rounded-[12px] border border-[var(--border)]">
-          <FilterButton label="Todos" active={filter === 'all'} onClick={() => setFilter('all')} />
-          <FilterButton label="Pendientes" active={filter === 'pending'} onClick={() => setFilter('pending')} />
-          <FilterButton label="Pagados" active={filter === 'paid'} onClick={() => setFilter('paid')} />
+        <div className="flex bg-[var(--bg-secondary)] p-1 rounded-[var(--radius-md)] border border-[var(--border)]">
+          <FilterPill label="Todos" active={filter === 'all'} onClick={() => setFilter('all')} />
+          <FilterPill label="Pendientes" active={filter === 'pending'} onClick={() => setFilter('pending')} />
+          <FilterPill label="Pagados" active={filter === 'paid'} onClick={() => setFilter('paid')} />
         </div>
       </div>
 
       {loading ? (
-        <div className="space-y-4">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-20 bg-[var(--bg-card)] rounded-xl animate-pulse" />)}
+        <div className="space-y-3">
+          {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-[var(--bg-card)] rounded-[var(--radius-md)] animate-pulse" />)}
         </div>
       ) : filteredServices.length === 0 ? (
         <EmptyState 
@@ -256,63 +251,69 @@ export default function Services() {
           description={search ? "No se encontraron resultados" : "Registra tu primer trabajo para comenzar el historial."}
         />
       ) : (
-        <Card padding="none" className="overflow-hidden border border-[var(--border)]">
+        <div className="rounded-[var(--radius-md)] border border-[var(--border)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Cliente</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Fecha</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Equipo</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Monto</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Estado</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Acciones</th>
+                <tr className="border-b border-[var(--border)]">
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em]">Cliente</th>
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em] text-center">Fecha</th>
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em] text-center">Equipo</th>
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em] text-right">Monto</th>
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em] text-center">Estado</th>
+                  <th className="px-4 py-3 text-[12px] font-semibold text-[var(--text-muted)] uppercase tracking-[0.08em] text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border)]">
+              <tbody>
                 {filteredServices.map((s) => (
-                  <tr key={s.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
-                    <td className="px-6 py-5">
-                      <p className="font-bold text-[var(--text-primary)] text-sm">{s.clients?.name}</p>
+                  <tr key={s.id} className="border-b border-[var(--border)]/50 hover:bg-[var(--bg-hover)] transition-colors group">
+                    <td className="px-4 py-3">
+                      <span className="text-[14px] font-medium text-[var(--text-primary)]">{s.clients?.name}</span>
                     </td>
-                    <td className="px-6 py-5 text-sm text-[var(--text-secondary)] font-medium text-center">{formatDate(s.date)}</td>
-                    <td className="px-6 py-5 text-center">
+                    <td className="px-4 py-3 text-[13px] text-[var(--text-secondary)] text-center">{formatDate(s.date)}</td>
+                    <td className="px-4 py-3 text-center">
                       {s.employees ? (
-                        <Badge variant="info" className="px-2 py-0.5">{s.employees.name}</Badge>
+                        <Badge variant="info" className="text-[11px]">{s.employees.name}</Badge>
                       ) : (
-                        <span className="text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider opacity-60">No asignado</span>
+                        <span className="text-[12px] text-[var(--text-muted)]">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-5 font-mono font-bold text-right text-[var(--text-primary)]">{formatCurrency(s.amount)}</td>
-                    <td className="px-6 py-5 text-center">
+                    <td className="px-4 py-3 font-mono font-semibold text-right text-[14px] text-[var(--text-primary)]">{formatCurrency(s.amount)}</td>
+                    <td className="px-4 py-3 text-center">
                       <Badge variant={s.status === 'paid' ? 'success' : 'warning'}>
                         {s.status === 'paid' ? 'Pagado' : 'Pendiente'}
                       </Badge>
                     </td>
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleToggleStatus(s.id, s.status)}
-                          className={cn(
-                            "h-9 w-9 p-0",
-                            s.status === 'pending' ? "text-[var(--success)] hover:bg-[var(--success)]/10" : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
-                          )}
-                        >
-                          <CheckCircle2 className="w-4.5 h-4.5" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {s.status === 'pending' && (
+                          <button
+                            onClick={() => handleToggleStatus(s.id, s.status)}
+                            className="p-1.5 text-[var(--success)] hover:bg-[var(--success)]/10 rounded-lg transition-colors"
+                            title="Marcar pagado"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {s.status === 'paid' && (
+                          <button
+                            onClick={() => handleToggleStatus(s.id, s.status)}
+                            className="p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-hover)] rounded-lg transition-colors"
+                            title="Revertir a pendiente"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button 
                           onClick={() => {
                             setServiceToDelete(s.id);
                             setIsConfirmOpen(true);
                           }}
-                          className="text-[var(--danger)] hover:bg-[var(--danger)]/10 h-9 w-9 p-0"
+                          className="p-1.5 text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 rounded-lg transition-colors"
+                          title="Eliminar"
                         >
-                          <Trash2 className="w-4.5 h-4.5" />
-                        </Button>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -320,22 +321,29 @@ export default function Services() {
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* Modal Registro */}
+      {/* Count */}
+      {!loading && filteredServices.length > 0 && (
+        <p className="text-center text-[13px] text-[var(--text-muted)]">
+          Mostrando {filteredServices.length} servicios
+        </p>
+      )}
+
+      {/* Modal */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         title="Registrar Nuevo Trabajo"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {formData.client_id && clients.find(c => c.id === formData.client_id)?.notes && (
-            <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-xl flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-              <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-[var(--warning)] uppercase tracking-widest">Nota Importante del Cliente</p>
-                <p className="text-sm text-[var(--text-primary)] leading-relaxed italic">"{clients.find(c => c.id === formData.client_id)?.notes}"</p>
+            <div className="p-3 bg-[var(--warning)]/10 border border-[var(--warning)]/20 rounded-[var(--radius-md)] flex gap-3">
+              <AlertTriangle className="w-4 h-4 text-[var(--warning)] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[12px] font-semibold text-[var(--warning)]">Nota del Cliente</p>
+                <p className="text-[13px] text-[var(--text-secondary)] mt-0.5 italic">"{clients.find(c => c.id === formData.client_id)?.notes}"</p>
               </div>
             </div>
           )}
@@ -370,34 +378,34 @@ export default function Services() {
             />
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Estado del Pago</label>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, status: 'pending'})}
                 className={cn(
-                  "flex-1 p-5 rounded-2xl border transition-all flex flex-col items-center gap-2",
+                  "flex-1 p-4 rounded-[var(--radius-md)] border transition-all flex flex-col items-center gap-2",
                   formData.status === 'pending' 
-                    ? "bg-[var(--warning)]/10 border-[var(--warning)] text-[var(--warning)] shadow-[0_0_24px_rgba(251,191,36,0.15)] ring-1 ring-[var(--warning)]/20" 
-                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] grayscale hover:grayscale-0"
+                    ? "bg-[var(--warning)]/10 border-[var(--warning)]/40 text-[var(--warning)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-soft)]"
                 )}
               >
-                <Clock className="w-6 h-6" />
-                <span className="text-[11px] font-bold uppercase tracking-widest">Pendiente</span>
+                <Clock className="w-5 h-5" />
+                <span className="text-[12px] font-semibold">Pendiente</span>
               </button>
               <button 
                 type="button"
                 onClick={() => setFormData({...formData, status: 'paid'})}
                 className={cn(
-                  "flex-1 p-5 rounded-2xl border transition-all flex flex-col items-center gap-2",
+                  "flex-1 p-4 rounded-[var(--radius-md)] border transition-all flex flex-col items-center gap-2",
                   formData.status === 'paid' 
-                    ? "bg-[var(--success)]/10 border-[var(--success)] text-[var(--success)] shadow-[0_0_24px_rgba(52,211,153,0.15)] ring-1 ring-[var(--success)]/20" 
-                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] grayscale hover:grayscale-0"
+                    ? "bg-[var(--success)]/10 border-[var(--success)]/40 text-[var(--success)]" 
+                    : "bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-soft)]"
                 )}
               >
-                <CheckCircle2 className="w-6 h-6" />
-                <span className="text-[11px] font-bold uppercase tracking-widest">Pagado</span>
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-[12px] font-semibold">Pagado</span>
               </button>
             </div>
           </div>
@@ -417,17 +425,17 @@ export default function Services() {
             <label className="text-[13px] font-medium text-[var(--text-secondary)] px-1">Notas del Trabajo</label>
             <textarea 
               placeholder="Ej: Solo primer piso, trajo sus químicos..."
-              className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[12px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[var(--accent)]/15 transition-all h-24 resize-none"
+              className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-3 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-all h-24 resize-none"
               value={formData.notes}
               onChange={e => setFormData({...formData, notes: e.target.value})}
             />
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-3">
             <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1" disabled={!formData.client_id || !formData.amount} size="lg">
+            <Button type="submit" className="flex-1" disabled={!formData.client_id || !formData.amount}>
               Registrar Trabajo
             </Button>
           </div>
@@ -439,7 +447,7 @@ export default function Services() {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
         title="¿Eliminar registro de servicio?"
-        description="Esta acción eliminará permanentemente la información de este trabajo y no se podrá recuperar."
+        description="Esta acción eliminará permanentemente la información de este trabajo."
         danger
         confirmLabel="Eliminar Registro"
       />
@@ -447,19 +455,18 @@ export default function Services() {
   );
 }
 
-function FilterButton({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
+function FilterPill({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
       className={cn(
-        "px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-all duration-200",
+        "px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all duration-200",
         active 
-          ? "bg-[var(--accent)] text-white shadow-[0_4px_16px_rgba(139,92,246,0.4)] translate-y-[-1px]" 
-          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+          ? "bg-[var(--accent)] text-white" 
+          : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
       )}
     >
       {label}
     </button>
   );
 }
-

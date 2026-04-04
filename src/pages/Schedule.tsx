@@ -5,8 +5,8 @@ import {
   Plus,
   Users,
   CalendarDays,
-  LayoutGrid,
   List,
+  LayoutGrid,
   CheckCircle,
   Phone,
   ArrowRight
@@ -17,13 +17,14 @@ import { formatDate, cn } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-// New UI Components
-import { Card } from '../components/ui/Card';
+// UI Components
+
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
+import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/EmptyState';
 
 interface Employee {
@@ -183,59 +184,53 @@ export default function Schedule() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Agenda</h1>
-          <p className="text-[var(--text-secondary)] mt-1 font-medium">Organiza los trabajos de las próximas semanas</p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex bg-[var(--bg-secondary)] p-1 rounded-[12px] border border-[var(--border)]">
-            <button 
-              onClick={() => setView('list')}
-              className={cn(
-                "px-4 py-2 rounded-[10px] text-sm font-semibold flex items-center gap-2 transition-all duration-200",
-                view === 'list' 
-                  ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)] shadow-[0_4px_12px_rgba(0,0,0,0.3)] translate-y-[-1px]" 
-                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-              )}
-            >
-              <List className="w-4 h-4" />
-              Lista
-            </button>
-            <button 
-              onClick={() => setView('week')}
-              className={cn(
-                "px-4 py-2 rounded-[10px] text-sm font-semibold flex items-center gap-2 transition-all duration-200",
-                view === 'week' 
-                  ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)] shadow-[0_4px_12px_rgba(0,0,0,0.3)] translate-y-[-1px]" 
-                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-              )}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Vista Cuadrícula
-            </button>
-          </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Agenda"
+        subtitle="Servicios programados"
+        actions={
+          <div className="flex items-center gap-2">
+            {/* View Toggle */}
+            <div className="flex bg-[var(--bg-secondary)] p-1 rounded-[var(--radius-md)] border border-[var(--border)]">
+              <button 
+                onClick={() => setView('list')}
+                className={cn(
+                  "p-2 rounded-lg transition-all duration-200",
+                  view === 'list' 
+                    ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)]" 
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                )}
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setView('week')}
+                className={cn(
+                  "p-2 rounded-lg transition-all duration-200",
+                  view === 'week' 
+                    ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)]" 
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                )}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </div>
 
-          <Button 
-            onClick={() => setIsModalOpen(true)}
-            size="lg"
-            className="shadow-xl shadow-[var(--accent)]/10"
-          >
-            <Plus className="w-5 h-5" />
-            Agendar Trabajo
-          </Button>
-        </div>
-      </header>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="w-4 h-4" />
+              Programar visita
+            </Button>
+          </div>
+        }
+      />
 
       {loading ? (
-        <div className="space-y-12">
+        <div className="space-y-8">
           {[1,2].map(i => (
-            <div key={i} className="space-y-6">
-              <div className="h-6 w-48 bg-[var(--bg-card)] rounded-lg animate-pulse" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1,2,3].map(j => <div key={j} className="h-48 bg-[var(--bg-card)] rounded-2xl animate-pulse" />)}
+            <div key={i} className="space-y-4">
+              <div className="h-5 w-40 bg-[var(--bg-card)] rounded-lg animate-pulse" />
+              <div className="space-y-3">
+                {[1,2].map(j => <div key={j} className="h-32 bg-[var(--bg-card)] rounded-[var(--radius-md)] animate-pulse" />)}
               </div>
             </div>
           ))}
@@ -244,90 +239,91 @@ export default function Schedule() {
         <EmptyState 
           icon={CalendarDays}
           title="Sin servicios programados"
-          description="Usa el botón de Nuevo Servicio para agendar trabajos futuros y mantenerte organizado."
-          actionLabel="Agendar Trabajo"
+          description="Agenda trabajos futuros para mantenerte organizado."
+          actionLabel="Programar visita"
           onAction={() => setIsModalOpen(true)}
         />
       ) : (
-        <div className="space-y-12">
+        <div className="space-y-8">
           {scheduled.map(group => (
-            <section key={group.day} className="space-y-6">
-              <div className="flex items-center gap-4 px-1 group">
-                <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] group-hover:border-[var(--accent)]/30 group-hover:bg-[var(--bg-hover)] transition-colors">
-                  <Calendar className="w-5 h-5 text-[var(--accent)]" />
+            <section key={group.day} className="space-y-3">
+              {/* Day header */}
+              <div className="flex items-center gap-3 px-1">
+                <div className="p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border)]">
+                  <Calendar className="w-4 h-4 text-[var(--accent)]" />
                 </div>
-                <h2 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
+                <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
                   {formatDate(group.day)}
                 </h2>
-                <div className="h-px flex-1 bg-[var(--border)] opacity-30 ml-4" />
+                <div className="h-px flex-1 bg-[var(--border)] ml-2" />
+                <span className="text-[12px] text-[var(--text-muted)]">{group.items.length} servicios</span>
               </div>
               
+              {/* Service cards */}
               <div className={cn(
-                "grid gap-6",
+                "grid gap-3",
                 view === 'week' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
               )}>
                 {group.items.map(item => (
-                  <Card 
+                  <div 
                     key={item.id} 
-                    padding="none"
-                    variant="elevated"
-                    className="group relative flex flex-col border-[var(--border)] hover:border-[var(--accent)]/30 transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                    className="group rounded-[var(--radius-md)] border border-[var(--border)] hover:border-[var(--accent)]/20 bg-[var(--bg-card)] transition-all p-4"
                   >
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-5">
-                        <Badge variant={item.status === 'completed' ? 'success' : 'warning'}>
-                          {item.status === 'completed' ? 'Completado' : 'Pendiente'}
-                        </Badge>
-                        <Badge variant="muted" className="text-[10px] font-black uppercase tracking-widest bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-muted)]">
-                          {item.service_type || 'Limpieza'}
-                        </Badge>
+                    {/* Top: status + type */}
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
+                        {item.status === 'completed' ? 'Completado' : 'Pendiente'}
+                      </Badge>
+                      <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
+                    </div>
+
+                    {/* Client info */}
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">{item.clients?.name}</h3>
+                          <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] mt-1">
+                            <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+                            <span className="truncate">{item.clients?.address}</span>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/clients/${item.client_id}`)} 
+                          className="p-2 rounded-lg bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
                       </div>
-
-                      <div className="space-y-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <h3 className="font-bold text-xl text-[var(--text-primary)] truncate tracking-tight">{item.clients?.name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mt-2 font-medium">
-                              <MapPin className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-                              <span className="truncate">{item.clients?.address}</span>
-                            </div>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="bg-[var(--bg-secondary)] h-10 w-10 p-0 rounded-xl hover:bg-[var(--bg-hover)]"
-                            onClick={() => navigate(`/clients/${item.client_id}`)}
-                          >
-                             <ArrowRight className="w-5 h-5" />
-                          </Button>
+                      
+                      {/* Footer: phone + employee */}
+                      <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]/50">
+                        <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)]">
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>{item.clients?.phone}</span>
                         </div>
-                        
-                        <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] border-dashed">
-                          <div className="flex items-center gap-3">
-                            <Phone className="w-4 h-4 text-[var(--text-muted)]" />
-                            <span className="text-sm font-medium text-[var(--text-secondary)]">{item.clients?.phone}</span>
+                        {item.employees && (
+                          <div className="flex items-center gap-1.5 text-[12px] text-[var(--accent-light)]">
+                            <Users className="w-3.5 h-3.5" />
+                            <span className="font-medium">{item.employees.name}</span>
                           </div>
-                          {item.employees && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border)]">
-                              <Users className="w-3.5 h-3.5 text-[var(--accent)]" />
-                              <span className="text-xs font-bold text-[var(--text-primary)]">{item.employees.name}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {item.status === 'pending' && (
-                          <Button 
-                            variant="primary"
-                            onClick={() => handleComplete(item)}
-                            className="w-full h-12 bg-[var(--success)]/10 text-[var(--success)] hover:bg-[var(--success)] shadow-none hover:text-white border border-[var(--success)]/20"
-                          >
-                            <CheckCircle className="w-5 h-5" />
-                            Registrar como Completado
-                          </Button>
                         )}
                       </div>
+
+                      {/* Action buttons */}
+                      {item.status === 'pending' && (
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            size="sm"
+                            onClick={() => handleComplete(item)}
+                            className="flex-1 bg-[var(--success)]/10 text-[var(--success)] border-[var(--success)]/20 hover:bg-[var(--success)] hover:text-white shadow-none"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Completar
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </section>
@@ -335,13 +331,13 @@ export default function Schedule() {
         </div>
       )}
 
-      {/* Modal Agendar */}
+      {/* Modal */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Agendar Nuevo Trabajo"
+        title="Programar Visita"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Select 
             label="Cliente"
             required
@@ -378,12 +374,12 @@ export default function Schedule() {
             {activeEmployees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </Select>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-3">
             <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1" loading={isSubmitting} disabled={!formData.client_id || !formData.scheduled_date} size="lg">
-              Confirmar Agenda
+            <Button type="submit" className="flex-1" loading={isSubmitting} disabled={!formData.client_id || !formData.scheduled_date}>
+              Confirmar
             </Button>
           </div>
         </form>
@@ -391,4 +387,3 @@ export default function Schedule() {
     </div>
   );
 }
-

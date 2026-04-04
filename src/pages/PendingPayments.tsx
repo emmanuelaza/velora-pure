@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { 
   MessageCircle, 
   Search, 
-  AlertCircle, 
   CheckCircle2,
   Clock,
   TrendingDown,
@@ -13,12 +12,12 @@ import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, getInitials, avatarColor, cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-// New UI Components
-import { Card } from '../components/ui/Card';
+// UI Components
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
 import { MetricCard } from '../components/ui/MetricCard';
+import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/EmptyState';
 
 interface Debtor {
@@ -106,41 +105,36 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
   const totalGlobalPending = debtors.reduce((acc, curr) => acc + curr.total_amount, 0);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <header>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Cobros Pendientes</h1>
-        <p className="text-[var(--text-secondary)] mt-1 font-medium italic opacity-80">Gestiona los saldos a favor y envía recordatorios automáticos</p>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="Cobros pendientes"
+        subtitle="Clientes con pagos atrasados"
+        actions={
+          <div className="font-mono text-2xl font-semibold text-[var(--warning)]">
+            {formatCurrency(totalGlobalPending)}
+          </div>
+        }
+      />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <MetricCard 
           title="Deuda Total Pendiente"
           value={formatCurrency(totalGlobalPending)}
           icon={TrendingDown}
-          className="lg:col-span-2"
+          subtitle={`${debtors.length} clientes con saldo pendiente`}
         />
-        <Card variant="subtle" padding="none" className="lg:col-span-2 overflow-hidden flex flex-col justify-center bg-[var(--warning)]/5 border-[var(--warning)]/20 relative group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <AlertCircle className="w-24 h-24 text-[var(--warning)] -rotate-12" />
-          </div>
-          <div className="flex items-start gap-4 p-6 relative z-10">
-             <div className="p-3 bg-[var(--warning)]/15 rounded-xl shrink-0 border border-[var(--warning)]/20">
-               <AlertCircle className="w-6 h-6 text-[var(--warning)]" />
-             </div>
-             <div className="space-y-1.5">
-               <p className="text-[11px] font-bold text-[var(--warning)] uppercase tracking-widest">Aviso de Privacidad</p>
-               <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium max-w-[320px]">
-                 Las plantillas de WhatsApp incluyen automáticamente tus métodos de pago configurados en Settings.
-               </p>
-             </div>
-          </div>
-        </Card>
+        <MetricCard 
+          title="Clientes con Deuda"
+          value={debtors.length.toString()}
+          icon={Clock}
+          subtitle="Recordatorios vía WhatsApp disponibles"
+        />
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="w-full md:w-96">
+      {/* Search */}
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+        <div className="w-full md:w-80">
           <Input 
             icon={Search}
             placeholder="Buscar cliente pendiente..." 
@@ -148,14 +142,14 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider bg-[var(--bg-secondary)] px-4 py-2 rounded-full border border-[var(--border)]">
-          {filteredDebtors.length} Clientes pendientes
-        </div>
+        <span className="text-[13px] text-[var(--text-muted)]">
+          {filteredDebtors.length} clientes pendientes
+        </span>
       </div>
 
       {loading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-28 bg-[var(--bg-card)] rounded-[20px] animate-pulse" />)}
+        <div className="space-y-3">
+          {[1,2,3].map(i => <div key={i} className="h-24 bg-[var(--bg-card)] rounded-[var(--radius-md)] animate-pulse" />)}
         </div>
       ) : filteredDebtors.length === 0 ? (
         <EmptyState 
@@ -164,82 +158,71 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
           description="No tienes ningún cobro pendiente en este momento. ¡Excelente trabajo!"
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredDebtors.map(debtor => {
             const urgencyDays = Math.floor((Date.now() - new Date(debtor.last_service_date).getTime()) / (1000 * 60 * 60 * 24));
             const isRed = urgencyDays > 30;
             const isYellow = urgencyDays > 14;
-            const urgencyColor = isRed ? 'bg-[var(--danger)]' : isYellow ? 'bg-[var(--warning)]' : 'bg-[var(--success)]';
-            const urgencyText = isRed ? 'text-[var(--danger)]' : isYellow ? 'text-[var(--warning)]' : 'text-[var(--success)]';
-            const urgencyWidth = Math.min((urgencyDays / 30) * 100, 100) + '%';
             
             return (
-              <Card key={debtor.id} padding="none" className="group overflow-hidden border-[var(--border)] hover:border-[var(--warning)]/30 transition-all hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] cursor-pointer" onClick={() => navigate(`/clients/${debtor.id}`)}>
-                <div className="h-1.5 w-full bg-[var(--bg-secondary)] overflow-hidden">
-                  <div className={cn("h-full transition-all duration-1000 ease-out", urgencyColor)} style={{ width: urgencyWidth }} />
-                </div>
-                
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6">
-                  <div className="flex items-center gap-5 flex-1 min-w-0">
+              <div 
+                key={debtor.id} 
+                className="group rounded-[var(--radius-md)] border border-[var(--border)] hover:border-[var(--warning)]/20 bg-[var(--bg-card)] transition-all cursor-pointer overflow-hidden"
+                onClick={() => navigate(`/clients/${debtor.id}`)}
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+                  {/* Left: client info */}
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div 
-                      className="w-16 h-16 rounded-[20px] flex items-center justify-center font-bold text-xl shrink-0 border border-white/5 shadow-inner ring-1 ring-white/5"
+                      className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-base shrink-0"
                       style={{ backgroundColor: `${avatarColor(debtor.name)}15`, color: avatarColor(debtor.name) }}
                     >
                       {getInitials(debtor.name)}
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center flex-wrap gap-2">
-                        <h3 className="font-bold text-xl text-[var(--text-primary)] truncate tracking-tight">{debtor.name}</h3>
-                        {isRed && <Badge variant="danger" className="text-[10px] uppercase font-black px-1.5 py-0">Crítico</Badge>}
-                        {isYellow && !isRed && <Badge variant="warning" className="text-[10px] uppercase font-black px-1.5 py-0">Atrasado</Badge>}
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">{debtor.name}</h3>
+                        {isRed && <Badge variant="danger" className="text-[10px] font-semibold px-1.5 py-0">Crítico</Badge>}
+                        {isYellow && !isRed && <Badge variant="warning" className="text-[10px] font-semibold px-1.5 py-0">Atrasado</Badge>}
                       </div>
-                      <div className="flex items-center gap-4 mt-2 font-medium">
-                        <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
-                          <Badge variant="muted" className="bg-[var(--bg-secondary)] font-bold px-2 py-0.5 border-[var(--border)] text-[var(--accent-light)]">
-                            {debtor.pending_count} {debtor.pending_count === 1 ? 'Job' : 'Jobs'}
-                          </Badge>
-                        </div>
-                        <span className={cn("text-xs flex items-center gap-1.5", urgencyText)}>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[13px] text-[var(--text-muted)]">
+                          {debtor.pending_count} {debtor.pending_count === 1 ? 'servicio' : 'servicios'}
+                        </span>
+                        <span className={cn("text-[13px] flex items-center gap-1", isRed ? "text-[var(--danger)]" : isYellow ? "text-[var(--warning)]" : "text-[var(--text-muted)]")}>
                           <Clock className="w-3.5 h-3.5" />
-                          {urgencyDays} días acumulados
+                          {urgencyDays} días
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 md:gap-10 border-t md:border-t-0 md:border-l border-[var(--border)] pt-6 md:pt-0 md:pl-10">
+                  {/* Right: amount & actions */}
+                  <div className="flex items-center gap-4 md:gap-6">
                     <div className="text-right">
-                      <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1.5">Monto Adeudado</p>
-                      <p className="font-mono text-3xl font-bold text-[var(--text-primary)] tracking-tighter">{formatCurrency(debtor.total_amount)}</p>
+                      <p className="text-[11px] font-medium text-[var(--text-muted)] uppercase tracking-[0.06em]">Adeudado</p>
+                      <p className="font-mono text-xl font-semibold text-[var(--text-primary)] mt-0.5">{formatCurrency(debtor.total_amount)}</p>
                     </div>
                     
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="secondary"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/clients/${debtor.id}`);
-                        }}
-                        className="h-12 w-12 p-0 rounded-xl"
+                      <button
+                        onClick={() => navigate(`/clients/${debtor.id}`)}
+                        className="p-2.5 rounded-[var(--radius-md)] bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                       >
-                        <ArrowRight className="w-5 h-5" />
-                      </Button>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
                       <Button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          sendReminder(debtor);
-                        }}
-                        className="bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all h-12 px-6 shadow-lg shadow-[#25D366]/5"
+                        onClick={() => sendReminder(debtor)}
+                        className="bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20 hover:bg-[#25D366]/20 h-10 px-4"
                       >
-                        <MessageCircle className="w-5 h-5 fill-current" />
+                        <MessageCircle className="w-4 h-4 fill-current" />
                         Recordar
                       </Button>
                     </div>
                   </div>
                 </div>
-              </Card>
-            )
+              </div>
+            );
           })}
         </div>
       )}
