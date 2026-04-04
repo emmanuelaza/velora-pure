@@ -37,7 +37,7 @@ interface ScheduledService {
   client_id: string;
   service_type: string;
   scheduled_date: string;
-  status: 'pending' | 'completed' | 'canceled';
+  status: 'scheduled' | 'completed' | 'canceled';
   assigned_employee_id?: string;
   employees?: {
     name: string;
@@ -164,7 +164,7 @@ export default function Schedule() {
         service_type: formData.service_type,
         scheduled_date: formData.scheduled_date,
         assigned_employee_id: formData.assigned_employee_id || null,
-        status: 'pending'
+        status: 'scheduled'
       });
       if (error) throw error;
       toast.success('Servicio agendado');
@@ -272,7 +272,7 @@ export default function Schedule() {
                     {/* Top: status + type */}
                     <div className="flex items-center justify-between mb-3">
                       <Badge variant={item.status === 'completed' ? 'success' : 'warning'} className="text-[11px]">
-                        {item.status === 'completed' ? 'Completado' : 'Pendiente'}
+                        {item.status === 'completed' ? 'Completado' : item.status === 'canceled' ? 'Cancelado' : 'Programado'}
                       </Badge>
                       <span className="text-[12px] text-[var(--text-muted)]">{item.service_type || 'Limpieza'}</span>
                     </div>
@@ -310,7 +310,7 @@ export default function Schedule() {
                       </div>
 
                       {/* Action buttons */}
-                      {item.status === 'pending' && (
+                      {item.status === 'scheduled' && (
                         <div className="flex gap-2 pt-2">
                           <Button 
                             size="sm"
