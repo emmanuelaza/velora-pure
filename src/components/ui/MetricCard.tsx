@@ -31,10 +31,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
         {trend && (
           <div className={cn(
-            "flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold border",
+            "flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-semibold border-none",
             trend.isPositive 
-              ? "bg-[rgba(52,211,153,0.1)] border-[rgba(52,211,153,0.2)] text-[var(--success)]"
-              : "bg-[rgba(248,113,113,0.1)] border-[rgba(248,113,113,0.2)] text-[var(--danger)]"
+              ? "bg-[var(--success-subtle)] text-[var(--success)]"
+              : "bg-[var(--danger-subtle)] text-[var(--danger)]"
           )}>
             {trend.isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
             {trend.value}%

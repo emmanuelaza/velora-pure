@@ -25,9 +25,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             <select
               ref={ref}
               className={cn(
-                'w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[10px] px-[14px] py-[10px] text-[var(--text-primary)] appearance-none focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[rgba(139,92,246,0.15)] transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+                'w-full bg-[#FFFFFF] border border-[var(--border)] rounded-[10px] px-[14px] py-[10px] text-[var(--text-primary)] appearance-none focus:outline-none focus:border-[var(--accent)] focus:ring-[3px] focus:ring-[rgba(14,165,233,0.12)] transition-all disabled:opacity-50 disabled:cursor-not-allowed',
                 Icon && 'pl-11',
-                error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[rgba(248,113,113,0.15)]',
+                error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[rgba(239,68,68,0.12)]',
                 className
               )}
               {...props}

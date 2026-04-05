@@ -66,12 +66,12 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col md:flex-row font-sans antialiased text-[var(--text-primary)]">
+    <div className="min-h-screen bg-[var(--bg-secondary)] flex flex-col md:flex-row font-sans antialiased text-[var(--text-primary)]">
       
       {/* ═══════════════════════════════════════════
           MOBILE HEADER
       ═══════════════════════════════════════════ */}
-      <header className="md:hidden flex items-center justify-between h-14 px-4 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border)] sticky top-0 z-[100]">
+      <header className="md:hidden flex items-center justify-between h-14 px-4 bg-[#FFFFFF]/80 backdrop-blur-xl border-b border-[var(--border)] shadow-[var(--shadow-sm)] sticky top-0 z-[100]">
         <button 
           onClick={() => setIsDrawerOpen(true)} 
           className="p-2 -ml-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] rounded-[var(--radius-md)] hover:bg-[var(--bg-hover)] transition-all duration-200"
@@ -92,7 +92,7 @@ export default function Layout() {
       {/* ═══════════════════════════════════════════
           DESKTOP SIDEBAR
       ═══════════════════════════════════════════ */}
-      <aside className="hidden md:flex flex-col w-[240px] bg-[var(--bg-secondary)] border-r border-[var(--border)] h-screen sticky top-0 shrink-0">
+      <aside className="hidden md:flex flex-col w-[240px] bg-[#FFFFFF] border-r border-[var(--border)] h-screen sticky top-0 shrink-0">
         
         {/* Sidebar Header */}
         <div className="px-5 pt-6 pb-4">
@@ -147,7 +147,7 @@ export default function Layout() {
       {/* ═══════════════════════════════════════════
           MOBILE BOTTOM NAV
       ═══════════════════════════════════════════ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--bg-secondary)]/90 backdrop-blur-xl border-t border-[var(--border)] z-[100] flex items-stretch justify-around safe-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#FFFFFF]/90 backdrop-blur-xl border-t border-[var(--border)] z-[100] flex items-stretch justify-around safe-bottom">
         {mobileBottomItems.map((item) => (
           <NavLink
             key={item.path}
@@ -187,7 +187,7 @@ export default function Layout() {
           MOBILE DRAWER
       ═══════════════════════════════════════════ */}
       <aside className={cn(
-        "md:hidden fixed inset-y-0 left-0 w-[280px] bg-[var(--bg-secondary)] border-r border-[var(--border)] z-[120] transform transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col",
+        "md:hidden fixed inset-y-0 left-0 w-[280px] bg-[#FFFFFF] border-r border-[var(--border)] z-[120] transform transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col",
         isDrawerOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Drawer Header */}
@@ -268,15 +268,15 @@ function NavItem({ item, onClick }: { item: any, onClick?: () => void }) {
         "nav-item flex items-center justify-between w-full px-3 py-2 rounded-[var(--radius-md)] text-[14px] font-medium group relative",
         "transition-all duration-200",
         isActive 
-          ? "bg-[var(--accent-subtle)] text-[var(--accent-light)]" 
-          : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
+          ? "bg-[var(--accent-subtle)] text-[var(--accent-dark)]" 
+          : "text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
       )}
     >
       {({ isActive }) => (
         <>
-          {/* Linear-style active indicator — 2px left bar */}
+          {/* Linear-style active indicator — 3px left bar */}
           {isActive && (
-            <div className="absolute left-0 top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[var(--accent)]" />
+            <div className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r-full bg-[var(--accent)]" />
           )}
           
           <div className="flex items-center gap-3">
@@ -316,14 +316,11 @@ function Logo({ small }: { small?: boolean }) {
       </div>
       <span
         className={cn(
-          "font-bold tracking-tight",
-          small ? "text-base" : "text-lg"
+          "font-bold tracking-tight font-display",
+          small ? "text-base" : "text-[18px]"
         )}
         style={{
-          backgroundImage: 'var(--gradient-accent)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
+          color: "var(--text-primary)"
         }}
       >
         Velora Pure
