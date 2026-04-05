@@ -114,6 +114,7 @@ export default function Clients() {
 
   return (
     <div className="space-y-6">
+      <div className="anim-fade-up-1">
       <PageHeader
         title="Clientes"
         subtitle="Gestiona tu cartera de clientes"
@@ -130,8 +131,10 @@ export default function Clients() {
         }
       />
 
+      </div>
+
       {/* Search & Filters */}
-      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between anim-fade-up-2">
         <div className="w-full md:w-80">
           <Input 
             icon={Search}
@@ -161,7 +164,7 @@ export default function Clients() {
           onAction={() => setIsModalOpen(true)}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 anim-fade-up-3">
           {filteredClients.map(client => (
             <Card 
               key={client.id} 

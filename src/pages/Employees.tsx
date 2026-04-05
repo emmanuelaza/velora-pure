@@ -328,7 +328,7 @@ export default function Employees() {
           className={cn(
             "flex-1 py-2.5 rounded-[10px] text-sm font-bold transition-all duration-200",
             activeTab === 'equipo' 
-              ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)] shadow-[0_4px_12px_rgba(0,0,0,0.3)] translate-y-[-1px]" 
+              ? "bg-[var(--bg-primary)] text-[var(--accent)] border border-[var(--accent)]/20 shadow-[var(--shadow-sm)] translate-y-[-1px]" 
               : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
           )}
         >
@@ -340,7 +340,7 @@ export default function Employees() {
           className={cn(
             "flex-1 py-2.5 rounded-[10px] text-sm font-bold transition-all duration-200",
             activeTab === 'nomina' 
-              ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-soft)] shadow-[0_4px_12px_rgba(0,0,0,0.3)] translate-y-[-1px]" 
+              ? "bg-[var(--bg-primary)] text-[var(--accent)] border border-[var(--accent)]/20 shadow-[var(--shadow-sm)] translate-y-[-1px]" 
               : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
           )}
         >
@@ -824,7 +824,7 @@ function PayrollCard({ employee, onPay }: { employee: Employee, onPay: (amount: 
   const calculatedAmount = employee.payment_rate * (employee.payment_type === 'salario_fijo' ? 1 : employee.payment_type === 'por_servicio' ? count : Number(hours || 0));
 
   return (
-    <Card padding="none" className="relative border border-[var(--border)] overflow-hidden hover:border-[var(--accent)]/30 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+    <Card padding="none" className="relative border border-[var(--border)] overflow-hidden hover:border-[var(--accent)]/30 transition-all duration-500 hover:shadow-[var(--shadow-md)]">
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -879,7 +879,7 @@ function PayrollCard({ employee, onPay }: { employee: Employee, onPay: (amount: 
           className={cn(
             "w-full h-12 shadow-inner font-black uppercase tracking-[0.2em] text-[10px] duration-300",
             calculatedAmount > 0 
-              ? "bg-[var(--accent)] shadow-[0_8px_20px_rgba(139,92,246,0.3)]" 
+              ? "bg-[var(--accent)] shadow-[0_8px_20px_rgba(14,165,233,0.25)]" 
               : "opacity-30"
           )}
         >

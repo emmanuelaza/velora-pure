@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
 @theme {
   --font-sans: "DM Sans", sans-serif;
@@ -37,33 +38,121 @@
   --danger: #EF4444;
   --danger-subtle: #FEE2E2;
 
-  /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.04);
+  /* Sombras — light-mode calibrated */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 8px 32px rgba(15, 23, 42, 0.09), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 16px 48px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.06);
   
-  /* Redesign Tokens */
+  /* Tokens de diseño */
   --gradient-accent: linear-gradient(135deg, var(--accent), var(--accent-light));
+  --gradient-page: linear-gradient(135deg, #E0F2FE 0%, #F7F9FC 50%, #FFFFFF 100%);
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --radius-md: 12px;
 }
 
+/* ═══════════════════════════════════════
+   BASE STYLES
+═══════════════════════════════════════ */
 @layer base {
-  body {
-    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased;
-    font-family: 'DM Sans', sans-serif;
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
+
+  body {
+    @apply antialiased;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
   h1, h2, h3, h4, h5, h6, .font-display {
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
+
   .font-mono, [class*="mono"] {
     font-family: 'DM Mono', monospace;
   }
+
+  /* Page heading hierarchy */
+  h1 { font-size: 24px; font-weight: 600; color: var(--text-primary); }
+  h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
 }
 
+/* ═══════════════════════════════════════
+   SCROLLBAR PERSONALIZADO
+═══════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════
+   ANIMACIONES DE ENTRADA (staggered)
+═══════════════════════════════════════ */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.anim-fade-up {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.anim-fade-up-1 { animation: fadeSlideUp 0.4s 0ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anim-fade-up-2 { animation: fadeSlideUp 0.4s 60ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anim-fade-up-3 { animation: fadeSlideUp 0.4s 120ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anim-fade-up-4 { animation: fadeSlideUp 0.4s 180ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anim-fade-up-5 { animation: fadeSlideUp 0.4s 240ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anim-fade-up-6 { animation: fadeSlideUp 0.4s 300ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+/* ═══════════════════════════════════════
+   TABLAS — ESTILO GLOBAL
+═══════════════════════════════════════ */
 @layer components {
+  /* Table header cells */
+  .table-header {
+    @apply text-[12px] font-semibold uppercase tracking-[0.06em] text-[#94A3B8] px-4 py-3;
+  }
+
+  /* Table rows */
+  .table-row {
+    @apply border-b border-[#F1F5F9] hover:bg-[#F0F4F8] transition-colors duration-150;
+  }
+
+  /* Table cells */
+  .table-cell {
+    @apply px-4 py-3 text-[14px] text-[#0F172A];
+  }
+
+  /* Amount display */
   .amount {
-    @apply font-mono;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-primary);
   }
 
   /* Safe area for mobile bottom nav */
@@ -76,4 +165,103 @@
     letter-spacing: 0.08em;
     user-select: none;
   }
+
+  /* ═══════════════════════════════════════
+     ESTADOS VACÍOS — ESTILO GLOBAL
+  ═══════════════════════════════════════ */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 px-6 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-14 h-14 text-[#94A3B8] mb-4 opacity-40;
+  }
+
+  .empty-state-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-[16px] font-semibold text-[#475569] mb-2;
+  }
+
+  .empty-state-subtitle {
+    @apply text-[14px] text-[#94A3B8] max-w-xs;
+  }
+
+  /* ═══════════════════════════════════════
+     URGENCY BORDERS — Cobros Pendientes
+  ═══════════════════════════════════════ */
+  .urgency-normal {
+    border-left: 4px solid var(--warning) !important;
+  }
+
+  .urgency-critical {
+    border-left: 4px solid var(--danger) !important;
+  }
+
+  /* ═══════════════════════════════════════
+     CHIP — Paquetes y etiquetas
+  ═══════════════════════════════════════ */
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium;
+    background-color: var(--accent-subtle);
+    color: var(--accent-dark);
+    border-radius: 999px;
+  }
+
+  /* ═══════════════════════════════════════
+     PAGE WRAPPER — consistent padding
+  ═══════════════════════════════════════ */
+  .page-root {
+    @apply space-y-6 p-6 md:p-8;
+  }
+
+  /* ═══════════════════════════════════════
+     SECTION CARD HEADER
+  ═══════════════════════════════════════ */
+  .section-card-header {
+    @apply px-6 py-4 border-b flex items-center gap-3;
+    border-color: var(--border-soft);
+  }
+
+  .section-card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-[15px] font-semibold;
+    color: var(--text-primary);
+  }
 }
+
+/* ═══════════════════════════════════════
+   SKELETON PULSE
+═══════════════════════════════════════ */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  background-color: var(--bg-hover);
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════
+   WHATSAPP BUTTON
+═══════════════════════════════════════ */
+.btn-whatsapp {
+  background-color: #25D366;
+  color: white;
+  border-color: transparent;
+}
+.btn-whatsapp:hover {
+  background-color: #1ebe5e;
+}
+
+/* ═══════════════════════════════════════
+   METRIC ACCENT DOT (actividad reciente)
+═══════════════════════════════════════ */
+.status-dot {
+  @apply w-2 h-2 rounded-full shrink-0;
+}
+.status-dot-success { background-color: var(--success); }
+.status-dot-warning { background-color: var(--warning); }
+.status-dot-accent  { background-color: var(--accent); }
+.status-dot-danger  { background-color: var(--danger); }

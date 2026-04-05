@@ -106,6 +106,7 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
 
   return (
     <div className="space-y-6">
+      <div className="anim-fade-up-1">
       <PageHeader
         title="Cobros pendientes"
         subtitle="Clientes con pagos atrasados"
@@ -116,8 +117,10 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
         }
       />
 
+      </div>
+
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 anim-fade-up-2">
         <MetricCard 
           title="Deuda Total Pendiente"
           value={formatCurrency(totalGlobalPending)}
@@ -164,10 +167,16 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
             const isRed = urgencyDays > 30;
             const isYellow = urgencyDays > 14;
             
+            const borderClass = isRed
+              ? 'urgency-critical'
+              : isYellow
+              ? 'urgency-normal'
+              : '';
+
             return (
               <div 
                 key={debtor.id} 
-                className="group rounded-[var(--radius-md)] border border-[var(--border)] hover:border-[var(--warning)]/20 bg-[var(--bg-card)] transition-all cursor-pointer overflow-hidden"
+                className={`group rounded-[var(--radius-md)] border border-[var(--border)] hover:shadow-[var(--shadow-md)] bg-[var(--bg-card)] transition-all cursor-pointer overflow-hidden ${borderClass}`}
                 onClick={() => navigate(`/clients/${debtor.id}`)}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">

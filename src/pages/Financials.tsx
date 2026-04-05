@@ -254,7 +254,6 @@ export default function Financials() {
           value={formatCurrency(stats.totalCollected)}
           icon={DollarSign}
           subtitle="Ingresos confirmados"
-          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#16162a]"
           trend={{ value: 12, isPositive: true }}
         />
         <MetricCard 
@@ -262,21 +261,18 @@ export default function Financials() {
           value={formatCurrency(stats.totalPending)}
           icon={Clock}
           subtitle="Cuentas por cobrar"
-          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#1a1425]"
         />
         <MetricCard 
           title="Ticket Promedio"
           value={formatCurrency(stats.avgTicket)}
           icon={Target}
           subtitle="Valor por visita"
-          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#121a2c]"
         />
         <MetricCard 
           title="Servicios"
           value={stats.completedServices}
           icon={Activity}
           subtitle="Trabajos liquidados"
-          className="border-none bg-gradient-to-br from-[var(--bg-card)] to-[#151d1e]"
         />
       </div>
 
@@ -326,8 +322,8 @@ export default function Financials() {
                     backgroundColor: 'var(--bg-card)', 
                     borderColor: 'var(--border)', 
                     borderRadius: '16px',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-                    border: '1px solid var(--border-soft)',
+                    boxShadow: 'var(--shadow-lg)',
+                    border: '1px solid var(--border)',
                     padding: '12px'
                   }}
                   itemStyle={{ 

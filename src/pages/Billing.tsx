@@ -85,14 +85,14 @@ export default function Billing() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:items-start">
         {/* Current Plan Card */}
-        <Card variant="elevated" padding="none" className="relative overflow-hidden group border-[var(--accent)]/30 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+        <Card variant="elevated" padding="none" className="relative overflow-hidden group border-[var(--accent)]/20">
           <div className="h-1.5 w-full bg-gradient-to-r from-[var(--accent)] via-[var(--accent-light)] to-[var(--success)]" />
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-[var(--accent)]/[0.07] rounded-full blur-[80px] group-hover:bg-[var(--accent)]/[0.12] transition-all duration-700" />
+          <div className="absolute -top-32 -right-32 w-64 h-64 bg-[var(--accent)]/[0.04] rounded-full blur-[80px] group-hover:bg-[var(--accent)]/[0.08] transition-all duration-700" />
           
           <div className="p-10 space-y-10 relative z-10">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-card)] rounded-[24px] flex items-center justify-center border border-[var(--border)] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                <Zap className="w-8 h-8 text-[var(--accent-light)]" />
+              <div className="w-16 h-16 bg-[var(--accent-subtle)] rounded-[24px] flex items-center justify-center border border-[var(--accent)]/20">
+                <Zap className="w-8 h-8 text-[var(--accent)]" />
               </div>
               <div className="space-y-1">
                 <Badge variant="success" className="bg-[var(--accent)]/10 text-[var(--accent-light)] border-none text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 mb-1">Platinum Suite</Badge>

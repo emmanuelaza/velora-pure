@@ -496,7 +496,7 @@ function PackageCard({ pkg, onEdit, onShare }: { pkg: ServicePackage, onEdit: ()
           </div>
         )}
         {!pkg.is_active && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
             <Badge variant="muted">Inactivo</Badge>
           </div>
         )}
@@ -590,7 +590,7 @@ function Section({ icon: Icon, label, count, active, onToggle, items }: { icon: 
       {active && (
         <div className="flex flex-wrap gap-1.5 animate-in slide-in-from-top-1 duration-200">
           {items.map((item, i) => (
-            <span key={i} className="px-2 py-0.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
+            <span key={i} className="px-3 py-1 rounded-full text-[11px] font-medium" style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-dark)', borderRadius: '999px' }}>
               {item}
             </span>
           ))}

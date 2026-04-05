@@ -237,7 +237,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 anim-fade-up-1">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Buenos días, {business?.business_name || 'Negocio'} 👋</h1>
           <p className="text-[var(--text-secondary)] mt-1">Mira cómo va tu negocio este mes</p>
@@ -331,7 +331,7 @@ export default function Dashboard() {
       )}
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 anim-fade-up-2">
         <MetricCard 
           title="Cobrado este mes" 
           value={formatCurrency(stats?.totalCobrado || 0)} 
@@ -356,7 +356,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 anim-fade-up-3">
         {/* Pending Debts Column */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
