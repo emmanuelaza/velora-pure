@@ -13,7 +13,8 @@ import {
   TrendingUp,
   CreditCard,
   MoreHorizontal,
-  Package
+  Package,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
@@ -37,6 +38,7 @@ export default function Layout() {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: Users, label: 'Clientes', path: '/clients' },
         { icon: ClipboardList, label: 'Servicios', path: '/services' },
+        { icon: FileText, label: 'Cotizaciones', path: '/quotes' },
       ]
     },
     {
