@@ -15,6 +15,8 @@ create table if not exists public.businesses (
   pay_zelle     text default '',
   pay_venmo     text default '',
   pay_cashapp   text default '',
+  subscription_status text default 'trial',
+  trial_ends_at timestamptz,
   created_at    timestamptz default now()
 );
 

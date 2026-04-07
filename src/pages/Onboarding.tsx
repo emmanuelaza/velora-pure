@@ -48,6 +48,10 @@ export default function Onboarding() {
     setLoading(true);
     
     try {
+      // Calcular fin de trial (3 días desde ahora)
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 3);
+
       const { data: newBusiness, error } = await supabase.from('businesses').insert({
         owner_id: user.id,
         business_name: formData.businessName,
@@ -58,7 +62,8 @@ export default function Onboarding() {
         zelle_info: formData.zelle,
         venmo_info: formData.venmo,
         cashapp_info: formData.cashapp,
-        subscription_status: 'pending',
+        subscription_status: 'trial',
+        trial_ends_at: trialEndsAt.toISOString(),
       }).select().single();
 
       if (error) throw error;
