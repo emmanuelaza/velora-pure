@@ -18,7 +18,7 @@ export default function SubscriptionBlockingScreen() {
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-[var(--bg-primary)]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-[4px] animate-in fade-in duration-500">
       {/* Background patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-[var(--danger)]/5 rounded-full blur-[120px]" />
@@ -36,10 +36,10 @@ export default function SubscriptionBlockingScreen() {
           {/* Text Content */}
           <div className="space-y-4 mb-10">
             <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-              Acceso Restringido
+              Periodo de Prueba Finalizado
             </h1>
             <p className="text-[15px] leading-relaxed text-[var(--text-secondary)]">
-              Tu periodo de prueba ha finalizado o tu plan actual no está activo. Para continuar gestionando tu negocio con todas las herramientas premium de Velora Pure, por favor activa tu suscripción.
+              Tu prueba gratuita ha terminado. Activa tu plan para seguir usando Velora Pure y no perder el acceso a tus datos.
             </p>
           </div>
 

@@ -77,12 +77,10 @@ export default function App() {
         element={
           user ? (
             business ? (
-              // If subscription is invalid and NOT on billing page, show blocking screen
-              (!isAccessAllowed && !isBillingPage) ? (
-                <SubscriptionBlockingScreen />
-              ) : (
+              <>
+                {(!isAccessAllowed && !isBillingPage) && <SubscriptionBlockingScreen />}
                 <Layout />
-              )
+              </>
             ) : (
               <Navigate to="/onboarding" replace />
             )
