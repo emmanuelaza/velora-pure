@@ -1,7 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useBusiness } from './context/BusinessContext';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
@@ -17,11 +18,13 @@ import Financials from './pages/Financials';
 import Packages from './pages/Packages';
 import Quotes from './pages/Quotes';
 import Layout from './components/Layout';
+import SubscriptionBlockingScreen from './components/SubscriptionBlockingScreen';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
   const { user, loading: authLoading } = useAuth();
   const { business, loading: bizLoading } = useBusiness();
+  const location = useLocation();
 
   const loading = authLoading || (user && bizLoading);
 
@@ -33,10 +36,30 @@ export default function App() {
     );
   }
 
+  // Subscription verification logic
+  const isSubscriptionValid = () => {
+    if (!business) return false;
+    
+    // Status can be 'active' or 'trialing'
+    const isActive = business.subscription_status === 'active';
+    const isTrialing = business.subscription_status === 'trialing' || business.subscription_status === 'trial';
+    
+    // Check if trial is still valid
+    const trialNotExpired = business.trial_ends_at 
+      ? new Date(business.trial_ends_at) > new Date() 
+      : false;
+
+    return isActive || (isTrialing && trialNotExpired);
+  };
+
+  const isAccessAllowed = isSubscriptionValid();
+  const isBillingPage = location.pathname === '/billing';
+
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Onboarding Route */}
@@ -55,7 +78,16 @@ export default function App() {
       <Route 
         element={
           user ? (
-            business ? <Layout /> : <Navigate to="/onboarding" replace />
+            business ? (
+              // If subscription is invalid and NOT on billing page, show blocking screen
+              (!isAccessAllowed && !isBillingPage) ? (
+                <SubscriptionBlockingScreen />
+              ) : (
+                <Layout />
+              )
+            ) : (
+              <Navigate to="/onboarding" replace />
+            )
           ) : (
             <Navigate to="/login" replace />
           )
