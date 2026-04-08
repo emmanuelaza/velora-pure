@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useBusiness } from '../context/BusinessContext';
 import { cn, getInitials } from '../lib/utils';
+import { SubscriptionBanner } from './SubscriptionBanner';
 
 export default function Layout() {
   const { user, signOut } = useAuth();
@@ -250,6 +251,7 @@ export default function Layout() {
       <main className="flex-1 min-w-0 flex flex-col pb-16 md:pb-0 h-screen overflow-hidden">
         <div className="flex-1 overflow-y-auto px-5 py-5 md:px-8 md:py-8">
           <div className="max-w-[1200px] mx-auto w-full">
+            <SubscriptionBanner />
             <Outlet />
           </div>
         </div>
