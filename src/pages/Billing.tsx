@@ -27,7 +27,7 @@ export default function Billing() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const isActive = business?.subscription_status === 'active';
+  const isActive = business?.subscription_status === 'active' || business?.subscription_status === 'trialing';
   const isCanceled = business?.subscription_status === 'canceled';
   const isPastDue = business?.subscription_status === 'past_due';
 
@@ -122,7 +122,9 @@ export default function Billing() {
                     "bg-[var(--warning)] shadow-[0_0_15px_rgba(251,191,36,0.5)]"
                   )} />
                   <span className="font-black text-[var(--text-primary)] text-sm tracking-tight">
-                    {isActive ? 'Suscripción Activa' : isCanceled ? 'Suscripción Cancelada' : 'Pendiente de Pago'}
+                    {business?.subscription_status === 'active' ? 'Suscripción Activa' : 
+                     business?.subscription_status === 'trialing' ? 'Periodo de Prueba (Activo)' :
+                     isCanceled ? 'Suscripción Cancelada' : 'Pendiente de Pago'}
                   </span>
                 </div>
                 <Badge variant="muted" className="bg-[var(--bg-primary)] border-[var(--border)] font-black text-[9px] px-3 py-1 uppercase group-hover/status:text-[var(--text-primary)] transition-colors">V2.0</Badge>

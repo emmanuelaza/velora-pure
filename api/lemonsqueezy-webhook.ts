@@ -31,6 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
     const status = event.data?.attributes?.status
     const supabaseStatus = status === 'active' ? 'active'
+      : status === 'trialing' || status === 'on_trial' ? 'trialing'
       : status === 'past_due' ? 'past_due'
       : status === 'cancelled' ? 'canceled'
       : 'trial'

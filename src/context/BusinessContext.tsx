@@ -14,7 +14,7 @@ interface Business {
   zelle_info?: string;
   venmo_info?: string;
   cashapp_info?: string;
-  subscription_status: 'pending' | 'trial' | 'active' | 'past_due' | 'canceled';
+  subscription_status: 'pending' | 'trial' | 'trialing' | 'active' | 'past_due' | 'canceled';
   lemonsqueezy_subscription_id?: string;
   trial_ends_at?: string;
   logo_url?: string;

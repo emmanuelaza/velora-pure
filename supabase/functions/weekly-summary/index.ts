@@ -36,7 +36,7 @@ serve(async () => {
   const { data: activeBusinesses, error: bizError } = await supabase
     .from('businesses')
     .select('*')
-    .in('subscription_status', ['active', 'trial'])
+    .in('subscription_status', ['active', 'trial', 'trialing'])
 
   if (bizError) return new Response(JSON.stringify(bizError), { status: 500 })
 

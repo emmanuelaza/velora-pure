@@ -105,7 +105,7 @@ export default function Quotes() {
     manual_price: null as number | null
   });
 
-  const isActive = business?.subscription_status === 'active';
+  const isActive = business?.subscription_status === 'active' || business?.subscription_status === 'trialing';
 
   useEffect(() => {
     if (isActive) {
