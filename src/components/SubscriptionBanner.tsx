@@ -1,8 +1,7 @@
 import { useBusiness } from '../context/BusinessContext';
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays, parseISO } from 'date-fns';
-import { AlertCircle, CheckCircle2, Crown, ArrowRight } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { AlertCircle, Crown, ArrowRight } from 'lucide-react';
 import { Button } from './ui/Button';
 
 export function SubscriptionBanner() {
