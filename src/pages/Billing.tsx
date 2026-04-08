@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
-import { cn } from '../lib/utils';
 import { createCheckoutUrl } from '../lib/lemonsqueezy';
 import { toast } from 'react-hot-toast';
 
@@ -26,7 +25,6 @@ export default function Billing() {
   const [loading, setLoading] = useState(false);
 
   const isActive = business?.subscription_status === 'active';
-  const isTrialing = business?.subscription_status === 'trialing';
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
