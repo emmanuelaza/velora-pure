@@ -48,11 +48,10 @@ export default function Onboarding() {
     setLoading(true);
     
     try {
-      // Calcular fin de trial (3 días desde ahora)
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 3);
 
-      const { data: newBusiness, error } = await supabase.from('businesses').insert({
+      const businessData = {
         owner_id: user.id,
         business_name: formData.businessName,
         owner_name: formData.ownerName,
@@ -62,17 +61,38 @@ export default function Onboarding() {
         zelle_info: formData.zelle,
         venmo_info: formData.venmo,
         cashapp_info: formData.cashapp,
-        subscription_status: 'trial',
-        trial_ends_at: trialEndsAt.toISOString(),
-      }).select().single();
+        subscription_status: 'trialing',
+      };
 
-      if (error) throw error;
+      let result;
+
+      // Si ya existe un registro (creado por Google Login auto-create), actualizamos
+      if (business?.id) {
+        result = await supabase
+          .from('businesses')
+          .update(businessData)
+          .eq('id', business.id)
+          .select()
+          .single();
+      } else {
+        // Si no existe, creamos (caso email login tradicional que se saltó el auto-create)
+        result = await supabase
+          .from('businesses')
+          .insert({
+            ...businessData,
+            trial_ends_at: trialEndsAt.toISOString(),
+          })
+          .select()
+          .single();
+      }
+
+      if (result.error) throw result.error;
 
       await refetch();
       
       try {
         await supabase.functions.invoke('welcome-email', {
-          body: { businessId: newBusiness.id }
+          body: { businessId: result.data.id }
         });
       } catch (emailErr) {
         console.error('Welcome email error:', emailErr);

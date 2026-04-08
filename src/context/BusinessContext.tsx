@@ -51,9 +51,36 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         if (error.code === 'PGRST116') {
           // No business found
+          
+          // Check if we should auto-create (not on register page)
+          const isRegistering = window.location.pathname.includes('/register');
+          
+          if (user && !isRegistering) {
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 3);
+
+            const { data: newBiz, error: createError } = await supabase
+              .from('businesses')
+              .insert({
+                owner_id: user.id,
+                business_name: '', // To be filled in onboarding
+                owner_name: user.user_metadata?.full_name || '',
+                subscription_status: 'trialing',
+                trial_ends_at: trialEndsAt.toISOString(),
+              })
+              .select()
+              .single();
+
+            if (!createError && newBiz) {
+              setBusiness(newBiz);
+              navigate('/onboarding');
+              return;
+            }
+          }
+
           setBusiness(null);
           // Auto redirect to onboarding if on a protected route
-          if (!window.location.pathname.includes('/login')) {
+          if (!window.location.pathname.includes('/login') && !isRegistering) {
             navigate('/onboarding');
           }
         } else {
