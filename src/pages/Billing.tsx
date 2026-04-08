@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { 
   CreditCard, 
-  AlertCircle, 
-  ExternalLink,
-  Calendar,
+  CheckCircle2, 
+  MessageCircle, 
+  Crown,
   Zap,
-  Lock,
-  ArrowRight,
   ShieldCheck,
-  Activity,
-  Infinity
+  ArrowRight,
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { useAuth } from '../context/AuthContext';
@@ -20,16 +19,14 @@ import { toast } from 'react-hot-toast';
 // New UI Components
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 
 export default function Billing() {
   const { business, refetch: refetchBusiness } = useBusiness();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const isActive = business?.subscription_status === 'active' || business?.subscription_status === 'trialing';
-  const isCanceled = business?.subscription_status === 'canceled';
-  const isPastDue = business?.subscription_status === 'past_due';
+  const isActive = business?.subscription_status === 'active';
+  const isTrialing = business?.subscription_status === 'trialing';
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -61,169 +58,179 @@ export default function Billing() {
     }
   };
 
+  const features = [
+    "Dashboard con resumen financiero en tiempo real",
+    "Gestión de clientes ilimitados",
+    "Catálogo de servicios personalizados",
+    "Cotizaciones con inteligencia artificial",
+    "Control de cobros con recordatorios por WhatsApp",
+    "Agenda semanal con asignación de empleados",
+    "Control de empleados y nómina",
+    "Paquetes de servicio profesionales",
+    "Reportes financieros mensuales en PDF",
+    "Configuración completa del negocio",
+    "Soporte directo por WhatsApp con Emmanuel",
+    "Configuración incluida en videollamada"
+  ];
+
   return (
-    <div className="space-y-10 max-w-6xl animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <header className="relative">
-        <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-[var(--accent)] rounded-r-full blur-[2px] opacity-70" />
-        <h1 className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">Suscripción y Plan</h1>
-        <p className="text-[var(--text-secondary)] mt-1.5 font-medium italic opacity-80">Escala tu negocio con potencia ilimitada y automatización</p>
-      </header>
+    <div className="max-w-[1000px] mx-auto py-10 px-6 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Header Section */}
+      <div className="text-center space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 animate-bounce transition-all duration-1000">
+          <Crown className="w-3.5 h-3.5 text-[var(--accent)]" />
+          <span className="text-[10px] font-black text-[var(--accent)] uppercase tracking-[0.2em]">Acceso Premium</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[var(--text-primary)] leading-tight">
+          Activa tu plan y toma <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)]">control de tu negocio</span>
+        </h1>
+        <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto font-medium">
+          Todo lo que necesitas para crecer, en un solo lugar. Sin complicaciones técnicas.
+        </p>
+      </div>
 
-      {isCanceled && (
-        <Card variant="subtle" padding="none" className="bg-[var(--danger)]/5 border-[var(--danger)]/20 animate-in slide-in-from-top-4 overflow-hidden">
-          <div className="p-6 flex items-center gap-5">
-             <div className="w-12 h-12 bg-[var(--danger)]/10 rounded-2xl flex items-center justify-center border border-[var(--danger)]/20">
-               <AlertCircle className="w-6 h-6 text-[var(--danger)]" />
-             </div>
-             <div>
-               <h4 className="font-black text-[var(--danger)] uppercase tracking-widest text-xs">Acceso Suspendido</h4>
-               <p className="text-sm text-[var(--text-secondary)] font-medium mt-1">Reactiva tu suscripción para recuperar todas las funciones operativas.</p>
-             </div>
-          </div>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:items-start">
-        {/* Current Plan Card */}
-        <Card variant="elevated" padding="none" className="relative overflow-hidden group border-[var(--accent)]/20">
-          <div className="h-1.5 w-full bg-gradient-to-r from-[var(--accent)] via-[var(--accent-light)] to-[var(--success)]" />
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-[var(--accent)]/[0.04] rounded-full blur-[80px] group-hover:bg-[var(--accent)]/[0.08] transition-all duration-700" />
-          
-          <div className="p-10 space-y-10 relative z-10">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-[var(--accent-subtle)] rounded-[24px] flex items-center justify-center border border-[var(--accent)]/20">
-                <Zap className="w-8 h-8 text-[var(--accent)]" />
-              </div>
-              <div className="space-y-1">
-                <Badge variant="success" className="bg-[var(--accent)]/10 text-[var(--accent-light)] border-none text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 mb-1">Platinum Suite</Badge>
-                <h3 className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">Velora Pure</h3>
-              </div>
-            </div>
-
-            <div className="space-y-5 py-2">
-              <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Funciones Desbloqueadas:</p>
-              <div className="grid grid-cols-1 gap-4">
-                <PlanFeature label="Clientes y Prospectos Ilimitados" icon={Infinity} />
-                <PlanFeature label="Servicios y Agenda Centralizada" icon={Calendar} />
-                <PlanFeature label="Recordatorios Auto-WhatsApp" icon={Activity} />
-                <PlanFeature label="Gestión de Nómina e Informes" icon={ShieldCheck} />
-                <PlanFeature label="Métricas de Rentabilidad Real-time" icon={Zap} />
-              </div>
-            </div>
-
-            <div className="pt-8 border-t border-[var(--border)] border-dashed space-y-4">
-              <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Estado de la suscripción</p>
-              <div className="flex items-center justify-between bg-[var(--bg-secondary)]/50 p-5 rounded-2xl border border-[var(--border)] group/status">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-3 h-3 rounded-full",
-                    isActive ? "bg-[var(--success)] shadow-[0_0_15px_rgba(52,211,153,0.5)] animate-pulse" : 
-                    (isCanceled || isPastDue) ? "bg-[var(--danger)] shadow-[0_0_15px_rgba(248,113,113,0.5)]" :
-                    "bg-[var(--warning)] shadow-[0_0_15px_rgba(251,191,36,0.5)]"
-                  )} />
-                  <span className="font-black text-[var(--text-primary)] text-sm tracking-tight">
-                    {business?.subscription_status === 'active' ? 'Suscripción Activa' : 
-                     business?.subscription_status === 'trialing' ? 'Periodo de Prueba (Activo)' :
-                     isCanceled ? 'Suscripción Cancelada' : 'Pendiente de Pago'}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start text-left">
+        
+        {/* Features List */}
+        <div className="lg:col-span-7 space-y-8 order-2 lg:order-1">
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--text-muted)] flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-[var(--accent-light)]" />
+              ¿Qué incluye tu suscripción?
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+              {features.map((feature, i) => (
+                <div key={i} className="flex items-start gap-3 group">
+                  <div className="mt-0.5 p-0.5 rounded-full bg-[var(--success)]/10 text-[var(--success)] group-hover:bg-[var(--success)] group-hover:text-black transition-all">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <span className="text-[14px] font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors leading-snug">
+                    {feature}
                   </span>
                 </div>
-                <Badge variant="muted" className="bg-[var(--bg-primary)] border-[var(--border)] font-black text-[9px] px-3 py-1 uppercase group-hover/status:text-[var(--text-primary)] transition-colors">V2.0</Badge>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              {!isActive ? (
-                <Button 
-                  onClick={handleActivatePlan}
-                  loading={loading}
-                  size="lg"
-                  className="w-full h-15 shadow-2xl shadow-[var(--accent)]/20 font-black uppercase tracking-[0.2em] text-xs"
-                >
-                  <CreditCard className="w-5 h-5 mr-3" />
-                  {isCanceled ? 'Reactivar Suscripción' : 'Activar Plan — $229/mes'}
-                  <ArrowRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              ) : (
-                <a 
-                  href="https://app.lemonsqueezy.com/my-orders"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block group/btn"
-                >
-                  <Button variant="secondary" size="lg" className="w-full h-15 border-[var(--border)] bg-transparent hover:bg-[var(--bg-secondary)] font-black uppercase tracking-[0.2em] text-xs">
-                    <span>Portal de Facturación</span>
-                    <ExternalLink className="w-4 h-4 ml-2 opacity-40 transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
-                  </Button>
-                </a>
-              )}
+              ))}
             </div>
           </div>
-        </Card>
 
-        {/* Billing Info Columns */}
-        <div className="space-y-8">
-          <Card variant="elevated" padding="none" className="border-[var(--border)] overflow-hidden shadow-2xl">
-            <div className="p-8 space-y-8">
-              <h3 className="font-black text-[var(--text-primary)] flex items-center gap-3 text-xs uppercase tracking-[0.2em]">
-                <div className="p-1.5 bg-[var(--accent)]/10 rounded-lg">
-                  <Calendar className="w-4 h-4 text-[var(--accent)]" />
-                </div>
-                Ciclo de Facturación
-              </h3>
-              
-              <div className="space-y-6">
-                <div className="p-6 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-card)] rounded-2xl border border-[var(--border)] shadow-inner">
-                  <p className="text-[10px] font-black text-[var(--text-muted)] mb-3 uppercase tracking-[0.15em]">Siguiente Renovación</p>
-                  <p className="text-2xl font-mono font-black text-[var(--text-primary)] tracking-tight">
-                    {isActive ? 'Gestionado por Lemonsqueezy' : 'Suscripción Inactiva'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="p-5 bg-[var(--bg-secondary)]/30 rounded-2xl border border-[var(--border)] group/card hover:bg-[var(--bg-secondary)]/50 transition-colors">
-                      <p className="text-[9px] font-black text-[var(--text-muted)] uppercase mb-2 tracking-widest">Frecuencia</p>
-                      <p className="text-sm font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Mensual (USD)</p>
-                   </div>
-                   <div className="p-5 bg-[var(--bg-secondary)]/30 rounded-2xl border border-[var(--border)] group/card hover:bg-[var(--bg-secondary)]/50 transition-colors">
-                      <p className="text-[9px] font-black text-[var(--text-muted)] uppercase mb-2 tracking-widest">Tributación</p>
-                      <p className="text-sm font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Incluida (RoM)</p>
-                   </div>
-                </div>
+          <div className="p-6 bg-[var(--bg-secondary)]/30 rounded-3xl border border-[var(--border)] border-dashed">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-[var(--accent)]/10 rounded-2xl">
+                <ShieldCheck className="w-6 h-6 text-[var(--accent)]" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-sm font-bold text-[var(--text-primary)]">Garantía de Satisfacción 100%</p>
+                <p className="text-xs text-[var(--text-muted)] font-medium italic">"Mi meta es que Velora Pure sea la herramienta que transforme tu negocio por completo. Si no estás feliz, yo no estoy feliz." - Emmanuel</p>
               </div>
             </div>
-            <div className="p-4 bg-[var(--bg-secondary)]/20 border-t border-[var(--border)] flex items-center justify-center gap-2">
-               <ShieldCheck className="w-3.5 h-3.5 text-[var(--text-muted)] opacity-50" />
-               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Facturación Segura HSH-256</p>
-            </div>
-          </Card>
+          </div>
+        </div>
 
-          <Card padding="lg" variant="subtle" className="bg-[var(--bg-card)]/30 border-[var(--border)] border-dashed relative overflow-hidden group">
-            <div className="absolute top-[-20px] right-[-20px] opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
-               <Lock className="w-32 h-32 text-[var(--text-muted)]" />
+        {/* Pricing Card */}
+        <div className="lg:col-span-5 order-1 lg:order-2 sticky top-24">
+          <Card 
+            variant="elevated" 
+            padding="none" 
+            className="overflow-hidden border-2 border-[var(--accent)]/30 shadow-[0_32px_64px_-16px_rgba(var(--accent-rgb),0.15)] bg-white"
+          >
+            <div className="bg-[var(--accent)] text-white p-6 text-center space-y-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Plan Único Todo Incluido</p>
+              <h2 className="text-xl font-black tracking-tight">Velora Platinum Suite</h2>
             </div>
-            <div className="relative z-10 space-y-4">
-              <h3 className="font-black text-[var(--text-secondary)] flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] group-hover:text-[var(--text-primary)] transition-colors">
-                <Lock className="w-4 h-4" /> Merchant of Record
-              </h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed font-medium transition-colors group-hover:text-[var(--text-secondary)]">
-                Tus datos financieros viajan encriptados de punto a punto. Velora Pure utiliza <span className="text-[var(--accent-light)] font-bold">Lemon Squeezy</span> para procesar transacciones cumpliendo con los máximos estándares PCI DSS globales.
-              </p>
+            
+            <div className="p-8 space-y-8">
+              <div className="text-center space-y-1">
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-2xl font-black text-[var(--text-muted)] self-start mt-2">$</span>
+                  <span className="text-6xl font-black tracking-tighter text-[var(--text-primary)]">229</span>
+                  <span className="text-xl font-bold text-[var(--text-muted)] self-end mb-2">/mes</span>
+                </div>
+                <p className="text-[10px] font-bold text-[var(--success)] uppercase tracking-widest bg-[var(--success)]/10 inline-block px-3 py-1 rounded-full">Precio Final • Todo Incluido</p>
+              </div>
+
+              <div className="space-y-4">
+                {isActive ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-2 p-4 bg-[var(--success)]/10 text-[var(--success)] rounded-2xl border border-[var(--success)]/20">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span className="font-bold text-sm">Tu plan está activo</span>
+                    </div>
+                    <a 
+                      href="https://app.lemonsqueezy.com/my-orders"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button variant="secondary" size="lg" className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Gestionar facturación
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={handleActivatePlan}
+                    loading={loading}
+                    size="lg"
+                    className="w-full h-16 text-lg font-black shadow-2xl shadow-[var(--accent)]/30 group"
+                  >
+                    Activar plan ahora
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                )}
+                
+                <p className="text-[11px] text-[var(--text-muted)] text-center font-medium leading-relaxed">
+                  Procesado de forma segura por <span className="text-[var(--text-primary)] font-bold">Lemon Squeezy</span>. <br />
+                  Pagos encriptados de punto a punto.
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-[var(--border)] border-dashed">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <Zap className="w-4 h-4 text-[var(--warning)]" />
+                    <span className="text-xs font-bold text-[var(--text-secondary)] tracking-tight">Activación instantánea</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-4 h-4 text-[var(--accent)]" />
+                    <span className="text-xs font-bold text-[var(--text-secondary)] tracking-tight">Cancela en cualquier momento</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
         </div>
+
       </div>
+
+      {/* Footer / Support Section */}
+      <div className="pt-16 border-t border-[var(--border)] text-center space-y-10">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <p className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
+            "Mi compromiso es que recuperes tu inversión multiplicada <br className="hidden md:block" />
+            gracias a la eficiencia que Velora Pure traerá a tu vida."
+          </p>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-sm font-black uppercase tracking-[0.2em] text-[var(--accent)]">Sin contratos. Cancela cuando quieras.</span>
+            <span className="text-xs text-[var(--text-muted)] font-medium">Flexibilidad total para tu negocio.</span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-[0.1em]">¿Tienes preguntas? Escríbele a Emmanuel</p>
+          <a 
+            href="https://wa.me/573016315482" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-[#25D366]/20 hover:scale-105"
+          >
+            <MessageCircle className="w-5 h-5 fill-current" />
+            Contactar por WhatsApp
+          </a>
+        </div>
+      </div>
+
     </div>
   );
 }
-
-function PlanFeature({ label, icon: Icon }: { label: string, icon: any }) {
-  return (
-    <div className="flex items-center gap-4 group/feature transition-all">
-      <div className="w-10 h-10 rounded-2xl bg-[var(--success)]/[0.03] flex items-center justify-center shrink-0 border border-[var(--success)]/10 group-hover/feature:bg-[var(--success)]/10 group-hover/feature:border-[var(--success)]/30 group-hover/feature:scale-105 transition-all">
-        <Icon className="w-4 h-4 text-[var(--success)] transition-transform group-hover/feature:rotate-12" />
-      </div>
-      <span className="text-sm text-[var(--text-secondary)] font-semibold group-hover/feature:text-[var(--text-primary)] transition-colors tracking-tight">{label}</span>
-    </div>
-  );
-}
-
