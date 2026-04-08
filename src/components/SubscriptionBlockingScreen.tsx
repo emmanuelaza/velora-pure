@@ -2,8 +2,20 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, CreditCard, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from './ui/Button';
 
+import { useBusiness } from '../context/BusinessContext';
+import { Navigate } from 'react-router-dom';
+
 export default function SubscriptionBlockingScreen() {
   const navigate = useNavigate();
+  const { business } = useBusiness();
+
+  // Safety check: if by some reason we get here and the plan is actually valid, we go back
+  const isActive = business?.subscription_status === 'active' || 
+    (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at).getTime() > Date.now());
+
+  if (isActive) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-[var(--bg-primary)]">

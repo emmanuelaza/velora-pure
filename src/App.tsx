@@ -39,17 +39,15 @@ export default function App() {
   // Subscription verification logic
   const isSubscriptionValid = () => {
     if (!business) return false;
-    
-    // Status can be 'active' or 'trialing'
-    const isActive = business.subscription_status === 'active';
-    const isTrialing = business.subscription_status === 'trialing' || business.subscription_status === 'trial';
-    
-    // Check if trial is still valid
-    const trialNotExpired = business.trial_ends_at 
-      ? new Date(business.trial_ends_at) > new Date() 
-      : false;
 
-    return isActive || (isTrialing && trialNotExpired);
+    const { subscription_status, trial_ends_at } = business;
+    
+    // Status can be 'active' or 'trialing' with a future date
+    const isActive = 
+      subscription_status === 'active' || 
+      (subscription_status === 'trialing' && trial_ends_at && new Date(trial_ends_at).getTime() > Date.now());
+
+    return !!isActive;
   };
 
   const isAccessAllowed = isSubscriptionValid();

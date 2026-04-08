@@ -11,8 +11,8 @@ export function SubscriptionBanner() {
   if (!business) return null;
 
   const { subscription_status, trial_ends_at } = business;
-
-  const isTrialActive = subscription_status === 'trialing' && trial_ends_at && new Date(trial_ends_at) > new Date();
+  
+  const isTrialActive = subscription_status === 'trialing' && trial_ends_at && new Date(trial_ends_at).getTime() > Date.now();
   const isActive = subscription_status === 'active';
   const isExpired = !isActive && !isTrialActive;
 
