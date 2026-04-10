@@ -9,8 +9,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useBusiness } from '../context/BusinessContext';
-import { formatCurrency, getInitials, avatarColor, cn } from '../lib/utils';
+import { getInitials, avatarColor, cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../hooks/useCurrency';
 
 // UI Components
 import { Button } from '../components/ui/Button';
@@ -35,6 +36,7 @@ export default function PendingPayments() {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const { format } = useCurrency();
 
   useEffect(() => {
     if (business) {
@@ -86,16 +88,39 @@ export default function PendingPayments() {
   };
 
   const sendReminder = (debtor: Debtor) => {
-    const message = `Hola ${debtor.name.split(' ')[0]}, espero estés bien. Te envío este recordatorio de tus ${debtor.pending_count} servicios de limpieza pendientes con ${business?.business_name} por un total de ${formatCurrency(debtor.total_amount)}. 
+    const isES = business?.country === 'ES';
+    
+    let paymentMethodsText = '';
+    if (isES) {
+      paymentMethodsText = [
+        business?.bizum_info ? `- Bizum: ${business.bizum_info}` : '',
+        business?.bank_name || business?.iban ? `- Transferencia Bancaria:\n  ${business.bank_name ? `Banco: ${business.bank_name}` : ''}\n  ${business.iban ? `IBAN: ${business.iban}` : ''}` : '',
+      ].filter(Boolean).join('\n');
+    } else {
+      paymentMethodsText = [
+        business?.zelle_info ? `- Zelle: ${business.zelle_info}` : '',
+        business?.venmo_info ? `- Venmo: @${business.venmo_info}` : '',
+        business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''
+      ].filter(Boolean).join('\n');
+    }
+
+    const message = `Hola ${debtor.name.split(' ')[0]}, espero estés bien. Te envío este recordatorio de tus ${debtor.pending_count} servicios de limpieza pendientes con ${business?.business_name} por un total de ${format(debtor.total_amount)}. 
     
 💰 Métodos de pago:
-${business?.zelle_info ? `- Zelle: ${business.zelle_info}` : ''}
-${business?.venmo_info ? `- Venmo: @${business.venmo_info}` : ''}
-${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
+${paymentMethodsText}
 
 ¡Muchas gracias!`;
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/1${debtor.phone.replace(/\D/g, '')}?text=${encoded}`, '_blank');
+    
+    // Check if phone starts with +34 (ES) or +1 (US) to avoid double prefix.
+    let phoneDigits = debtor.phone.replace(/\D/g, '');
+    if (isES) {
+      if (!phoneDigits.startsWith('34')) phoneDigits = '34' + phoneDigits;
+    } else {
+      if (!phoneDigits.startsWith('1')) phoneDigits = '1' + phoneDigits;
+    }
+    
+    window.open(`https://wa.me/${phoneDigits}?text=${encoded}`, '_blank');
   };
 
   const filteredDebtors = debtors.filter(d => 
@@ -112,7 +137,7 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
         subtitle="Clientes con pagos atrasados"
         actions={
           <div className="font-mono text-2xl font-semibold text-[var(--warning)]">
-            {formatCurrency(totalGlobalPending)}
+            {format(totalGlobalPending)}
           </div>
         }
       />
@@ -123,7 +148,7 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 anim-fade-up-2">
         <MetricCard 
           title="Deuda Total Pendiente"
-          value={formatCurrency(totalGlobalPending)}
+          value={format(totalGlobalPending)}
           icon={TrendingDown}
           subtitle={`${debtors.length} clientes con saldo pendiente`}
         />
@@ -210,7 +235,7 @@ ${business?.cashapp_info ? `- CashApp: $${business.cashapp_info}` : ''}
                   <div className="flex items-center gap-4 md:gap-6">
                     <div className="text-right">
                       <p className="text-[11px] font-medium text-[var(--text-muted)] uppercase tracking-[0.06em]">Adeudado</p>
-                      <p className="font-mono text-xl font-semibold text-[var(--text-primary)] mt-0.5">{formatCurrency(debtor.total_amount)}</p>
+                      <p className="font-mono text-xl font-semibold text-[var(--text-primary)] mt-0.5">{format(debtor.total_amount)}</p>
                     </div>
                     
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>

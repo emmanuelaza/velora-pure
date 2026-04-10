@@ -11,9 +11,13 @@ interface Business {
   phone: string;
   city: string;
   state: string;
+  country: string;
   zelle_info?: string;
   venmo_info?: string;
   cashapp_info?: string;
+  bizum_info?: string;
+  bank_name?: string;
+  iban?: string;
   subscription_status: 'pending' | 'trial' | 'trialing' | 'active' | 'past_due' | 'canceled';
   lemonsqueezy_subscription_id?: string;
   trial_ends_at?: string;

@@ -16,6 +16,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { PAYMENT_METHODS } from '../lib/constants';
 
 // UI Components
 import { Card } from '../components/ui/Card';
@@ -35,9 +36,13 @@ export default function Settings() {
     phone: business?.phone || '',
     city: business?.city || '',
     state: business?.state || '',
+    country: business?.country || 'US',
     zelle_info: business?.zelle_info || '',
     venmo_info: business?.venmo_info || '',
-    cashapp_info: business?.cashapp_info || ''
+    cashapp_info: business?.cashapp_info || '',
+    bizum_info: business?.bizum_info || '',
+    bank_name: business?.bank_name || '',
+    iban: business?.iban || ''
   });
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -121,9 +126,9 @@ export default function Settings() {
                 onChange={e => setFormData({...formData, city: e.target.value})} 
               />
               <Input 
-                label="Estado" 
+                label={business?.country === 'US' ? "Estado" : "Provincia"}
                 icon={Globe}
-                placeholder="FL"
+                placeholder={business?.country === 'US' ? "FL" : "Madrid"}
                 value={formData.state} 
                 onChange={e => setFormData({...formData, state: e.target.value})} 
               />
@@ -144,24 +149,15 @@ export default function Settings() {
           </div>
           
           <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input 
-              label="Zelle" 
-              placeholder="Email o teléfono"
-              value={formData.zelle_info} 
-              onChange={e => setFormData({...formData, zelle_info: e.target.value})} 
-            />
-            <Input 
-              label="Venmo" 
-              placeholder="@usuario"
-              value={formData.venmo_info} 
-              onChange={e => setFormData({...formData, venmo_info: e.target.value})} 
-            />
-            <Input 
-              label="Cash App" 
-              placeholder="$Cashtag"
-              value={formData.cashapp_info} 
-              onChange={e => setFormData({...formData, cashapp_info: e.target.value})} 
-            />
+            {(PAYMENT_METHODS[business?.country as keyof typeof PAYMENT_METHODS] || PAYMENT_METHODS.US).map((method) => (
+              <Input 
+                key={method.id}
+                label={method.label} 
+                placeholder={method.placeholder}
+                value={(formData as any)[method.id]} 
+                onChange={e => setFormData({...formData, [method.id]: e.target.value})} 
+              />
+            ))}
           </div>
         </Card>
 

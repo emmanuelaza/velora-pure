@@ -13,13 +13,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 
-const US_STATES = [
-  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
-  'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
-  'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
-  'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
-  'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
-];
+import { US_STATES, ES_PROVINCES, PAYMENT_METHODS } from '../lib/constants';
 
 export default function Onboarding() {
   const { user } = useAuth();
@@ -29,14 +23,17 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    businessName: '',
-    ownerName: '',
-    phone: '',
-    city: '',
-    state: 'Florida',
-    zelle: '',
-    venmo: '',
-    cashapp: '',
+    businessName: business?.business_name || '',
+    ownerName: business?.owner_name || '',
+    phone: business?.phone || '',
+    city: business?.city || '',
+    state: business?.state || (business?.country === 'ES' ? 'Madrid' : 'Florida'),
+    zelle: business?.zelle_info || '',
+    venmo: business?.venmo_info || '',
+    cashapp: business?.cashapp_info || '',
+    bizum: business?.bizum_info || '',
+    bankName: business?.bank_name || '',
+    iban: business?.iban || '',
     acceptsCash: true
   });
 
@@ -61,6 +58,9 @@ export default function Onboarding() {
         zelle_info: formData.zelle,
         venmo_info: formData.venmo,
         cashapp_info: formData.cashapp,
+        bizum_info: formData.bizum,
+        bank_name: formData.bankName,
+        iban: formData.iban,
         subscription_status: 'trialing',
       };
 
@@ -192,13 +192,13 @@ export default function Onboarding() {
                   />
 
                   <Select
-                    label="Estado / Región"
+                    label={business?.country === 'US' ? "Estado" : "Provincia"}
                     icon={Landmark}
                     value={formData.state}
                     onChange={e => setFormData({...formData, state: e.target.value})}
                     className="bg-[var(--bg-secondary)]/50"
                   >
-                    {US_STATES.map(state => (
+                    {(business?.country === 'US' ? US_STATES : ES_PROVINCES).map(state => (
                       <option key={state} value={state}>{state}</option>
                     ))}
                   </Select>
@@ -217,30 +217,20 @@ export default function Onboarding() {
 
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Input 
-                      label="Zelle Pay" 
-                      placeholder="Email o Teléfono" 
-                      icon={Wallet}
-                      value={formData.zelle}
-                      onChange={v => setFormData({...formData, zelle: v.target.value})}
-                      className="bg-[var(--bg-secondary)]/50"
-                    />
-                    <Input 
-                      label="Venmo ID" 
-                      placeholder="@usuario" 
-                      icon={Wallet}
-                      value={formData.venmo}
-                      onChange={v => setFormData({...formData, venmo: v.target.value})}
-                      className="bg-[var(--bg-secondary)]/50"
-                    />
-                    <Input 
-                      label="Cash App Tag" 
-                      placeholder="$cashtag" 
-                      icon={Wallet}
-                      value={formData.cashapp}
-                      onChange={v => setFormData({...formData, cashapp: v.target.value})}
-                      className="bg-[var(--bg-secondary)]/50"
-                    />
+                    {(PAYMENT_METHODS[business?.country as keyof typeof PAYMENT_METHODS] || PAYMENT_METHODS.US).map((method) => (
+                      <Input 
+                        key={method.id}
+                        label={method.label} 
+                        placeholder={method.placeholder} 
+                        icon={Wallet}
+                        value={(formData as any)[method.id.replace('_info', '').replace('bank_name', 'bankName')]}
+                        onChange={v => setFormData({
+                          ...formData, 
+                          [method.id.replace('_info', '').replace('bank_name', 'bankName')]: v.target.value
+                        })}
+                        className="bg-[var(--bg-secondary)]/50"
+                      />
+                    ))}
                     
                     <button 
                       type="button"

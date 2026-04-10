@@ -7,13 +7,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 
-const US_STATES = [
-  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia',
-  'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
-  'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey',
-  'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina',
-  'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
-];
+import { Globe } from 'lucide-react';
+import { COUNTRIES, US_STATES, ES_PROVINCES } from '../lib/constants';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -25,6 +20,7 @@ export default function Register() {
     ownerName: '',
     phone: '',
     city: '',
+    country: 'US',
     state: 'Florida',
     email: '',
     password: ''
@@ -59,6 +55,7 @@ export default function Register() {
         phone: formData.phone,
         city: formData.city,
         state: formData.state,
+        country: formData.country,
         subscription_status: 'trialing',
         trial_ends_at: trialEndsAt.toISOString(),
       });
@@ -163,13 +160,31 @@ export default function Register() {
                 required
               />
               <Select
-                label="Estado"
+                label="País"
+                icon={Globe}
+                value={formData.country}
+                onChange={e => {
+                  const newCountry = e.target.value;
+                  setFormData({ 
+                    ...formData, 
+                    country: newCountry,
+                    state: newCountry === 'US' ? 'Florida' : 'Madrid'
+                  });
+                }}
+                required
+              >
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
+                ))}
+              </Select>
+              <Select
+                label={formData.country === 'US' ? 'Estado' : 'Provincia'}
                 icon={Landmark}
                 value={formData.state}
                 onChange={e => setFormData({ ...formData, state: e.target.value })}
                 required
               >
-                {US_STATES.map(state => (
+                {(formData.country === 'US' ? US_STATES : ES_PROVINCES).map(state => (
                   <option key={state} value={state}>{state}</option>
                 ))}
               </Select>

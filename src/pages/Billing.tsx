@@ -140,7 +140,9 @@ export default function Billing() {
             <div className="p-8 space-y-8">
               <div className="text-center space-y-1">
                 <div className="flex items-center justify-center gap-1">
-                  <span className="text-2xl font-black text-[var(--text-muted)] self-start mt-2">$</span>
+                  <span className="text-2xl font-black text-[var(--text-muted)] self-start mt-2">
+                    {business?.country === 'ES' ? '€' : '$'}
+                  </span>
                   <span className="text-6xl font-black tracking-tighter text-[var(--text-primary)]">229</span>
                   <span className="text-xl font-bold text-[var(--text-muted)] self-end mb-2">/mes</span>
                 </div>
