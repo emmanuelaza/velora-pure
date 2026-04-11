@@ -316,7 +316,7 @@ export default function Services() {
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[13px] text-[var(--text-secondary)] text-center">{formatDate(s.date)}</td>
+                    <td className="px-4 py-3 text-[13px] text-[var(--text-secondary)] text-center">{formatDate(s.date, business?.country)}</td>
                     <td className="px-4 py-3 text-center">
                       {s.employees ? (
                         <Badge variant="info" className="text-[11px]">{s.employees.name}</Badge>

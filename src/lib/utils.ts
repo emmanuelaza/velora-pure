@@ -8,19 +8,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatCurrency = (amount: number): string =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+export const formatCurrency = (amount: number, country: string = 'US'): string =>
+  new Intl.NumberFormat(country === 'ES' ? 'es-ES' : 'en-US', { 
+    style: 'currency', 
+    currency: country === 'ES' ? 'EUR' : 'USD' 
+  }).format(amount);
 
-export const formatDate = (date: string | Date): string =>
-  new Intl.DateTimeFormat('es-US', {
-    day: 'numeric',
-    month: 'long',
+export const formatDate = (date: string | Date, country: string = 'US'): string =>
+  new Intl.DateTimeFormat(country === 'ES' ? 'es-ES' : 'en-US', {
+    day: '2-digit',
+    month: '2-digit',
     year: 'numeric'
   }).format(new Date(date));
 
-export const formatDateShort = (date: string | Date): string =>
-  new Intl.DateTimeFormat('es-US', {
-    day: 'numeric',
+export const formatDateShort = (date: string | Date, country: string = 'US'): string =>
+  new Intl.DateTimeFormat(country === 'ES' ? 'es-ES' : 'en-US', {
+    day: '2-digit',
     month: 'short'
   }).format(new Date(date));
 
@@ -40,8 +43,16 @@ export const debtColor = (days: number): string => {
   return '#888888';
 };
 
-export const formatPhone = (phone: string): string => {
+export const formatPhone = (phone: string, country: string = 'US'): string => {
+  if (!phone) return '';
   const digits = phone.replace(/\D/g, '');
+  if (country === 'ES') {
+    let esDigits = digits;
+    if (esDigits.startsWith('34')) esDigits = esDigits.slice(2);
+    if (esDigits.length === 9) return `+34 ${esDigits.slice(0, 3)} ${esDigits.slice(3, 6)} ${esDigits.slice(6)}`;
+    return phone.startsWith('+34') ? phone : `+34 ${phone}`;
+  }
+  
   if (digits.length === 10) return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   return phone;
 };

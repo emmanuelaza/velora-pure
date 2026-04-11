@@ -26,40 +26,62 @@ export async function generateMonthlyPDF(business: any) {
     const totalServicios = (services || []).length;
 
     const doc = new jsPDF();
+    const isES = business?.country === 'ES';
 
     // Header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.text(business.business_name || 'Velora Pure', 14, 20);
     
+    let currentY = 28;
+    if (isES && business?.nif_cif) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`NIF/CIF: ${business.nif_cif}`, 14, currentY);
+      currentY += 6;
+    }
+    
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Reporte Mensual - ${hoy.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase()}`, 14, 28);
+    doc.text(`Reporte Mensual - ${hoy.toLocaleString(isES ? 'es-ES' : 'en-US', { month: 'long', year: 'numeric' }).toUpperCase()}`, 14, currentY);
 
     // Resumen
+    currentY += 15;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text('Resumen del Mes', 14, 45);
+    doc.text('Resumen del Mes', 14, currentY);
     
+    currentY += 8;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total Cobrado: ${formatCurrency(totalCobrado)}`, 14, 53);
-    doc.text(`Total Pendiente: ${formatCurrency(totalPendiente)}`, 14, 60);
-    doc.text(`Total Servicios Realizados: ${totalServicios}`, 14, 67);
+    doc.text(`Total Cobrado: ${formatCurrency(totalCobrado, business?.country)}`, 14, currentY);
+    if (isES) {
+      doc.setFontSize(9);
+      doc.text(`(Exento de Base: ${formatCurrency(totalCobrado / 1.21, business?.country)} | IVA 21%: ${formatCurrency(totalCobrado - (totalCobrado / 1.21), business?.country)})`, 14, currentY + 5);
+      currentY += 5;
+      doc.setFontSize(11);
+    }
+    
+    currentY += 7;
+    doc.text(`Total Pendiente: ${formatCurrency(totalPendiente, business?.country)}`, 14, currentY);
+    currentY += 7;
+    doc.text(`Total Servicios Realizados: ${totalServicios}`, 14, currentY);
+
+    currentY += 8;
 
     // Tabla de Servicios
     const tableBody = (services || []).map(s => {
       const clientName = Array.isArray(s.clients) ? (s.clients as any[])[0]?.name : (s.clients as any)?.name;
       return [
-        formatDate(s.date),
+        formatDate(s.date, business?.country),
         clientName || 'Cliente sin nombre',
-      formatCurrency(s.amount),
-      s.status === 'paid' ? 'Pagado' : 'Pendiente'
+        formatCurrency(s.amount, business?.country),
+        s.status === 'paid' ? 'Pagado' : 'Pendiente'
       ];
     });
 
     autoTable(doc, {
-      startY: 75,
+      startY: currentY,
       head: [['Fecha', 'Cliente', 'Monto', 'Estado']],
       body: tableBody,
       headStyles: { fillColor: [139, 92, 246] }, // --accent color

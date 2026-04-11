@@ -28,6 +28,8 @@ export default function Onboarding() {
     phone: business?.phone || '',
     city: business?.city || '',
     state: business?.state || (business?.country === 'ES' ? 'Madrid' : 'Florida'),
+    zipCode: business?.zip_code || '',
+    nifCif: business?.nif_cif || '',
     zelle: business?.zelle_info || '',
     venmo: business?.venmo_info || '',
     cashapp: business?.cashapp_info || '',
@@ -55,6 +57,8 @@ export default function Onboarding() {
         phone: formData.phone,
         city: formData.city,
         state: formData.state,
+        zip_code: formData.zipCode,
+        nif_cif: business?.country === 'ES' ? formData.nifCif : '',
         zelle_info: formData.zelle,
         venmo_info: formData.venmo,
         cashapp_info: formData.cashapp,
@@ -202,6 +206,26 @@ export default function Onboarding() {
                       <option key={state} value={state}>{state}</option>
                     ))}
                   </Select>
+
+                  <Input
+                    label={business?.country === 'US' ? "Zip Code" : "Código Postal"}
+                    placeholder={business?.country === 'US' ? "10001" : "28001"}
+                    icon={MapPin}
+                    value={formData.zipCode}
+                    onChange={e => setFormData({...formData, zipCode: e.target.value})}
+                    className="bg-[var(--bg-secondary)]/50"
+                  />
+
+                  {business?.country === 'ES' && (
+                    <Input
+                      label="NIF / CIF"
+                      placeholder="B12345678"
+                      icon={Building2}
+                      value={formData.nifCif}
+                      onChange={e => setFormData({...formData, nifCif: e.target.value})}
+                      className="bg-[var(--bg-secondary)]/50"
+                    />
+                  )}
                 </div>
               </div>
             </Card>

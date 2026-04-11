@@ -36,7 +36,9 @@ export default function Settings() {
     phone: business?.phone || '',
     city: business?.city || '',
     state: business?.state || '',
+    zip_code: business?.zip_code || '',
     country: business?.country || 'US',
+    nif_cif: business?.nif_cif || '',
     zelle_info: business?.zelle_info || '',
     venmo_info: business?.venmo_info || '',
     cashapp_info: business?.cashapp_info || '',
@@ -132,6 +134,24 @@ export default function Settings() {
                 value={formData.state} 
                 onChange={e => setFormData({...formData, state: e.target.value})} 
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input 
+                label={business?.country === 'US' ? "Zip Code" : "Código Postal"}
+                icon={MapPin}
+                placeholder={business?.country === 'US' ? "10001" : "28001"}
+                value={formData.zip_code} 
+                onChange={e => setFormData({...formData, zip_code: e.target.value})} 
+              />
+              {business?.country === 'ES' && (
+                <Input 
+                  label="NIF / CIF"
+                  icon={Building2}
+                  placeholder="B12345678"
+                  value={formData.nif_cif} 
+                  onChange={e => setFormData({...formData, nif_cif: e.target.value})} 
+                />
+              )}
             </div>
           </div>
         </Card>

@@ -28,6 +28,7 @@ import { useBusiness } from '../context/BusinessContext';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import { toast } from 'react-hot-toast';
+import { useCurrency } from '../hooks/useCurrency';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -90,6 +91,7 @@ export default function Quotes() {
   const [clients, setClients] = useState<Client[]>([]);
   const [savedQuotes, setSavedQuotes] = useState<SavedQuote[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const { format, symbol } = useCurrency();
   
   // Form State
   const [form, setForm] = useState({
@@ -159,8 +161,10 @@ export default function Quotes() {
     // 5. Extras Total
     const extras_total = form.extras.reduce((sum, extra) => sum + (EXTRAS_PRICES[extra] || 0), 0);
 
-    // 6. Final Total
-    const total_price = subtotal - frequency_discount + extras_total;
+    // 6. Final Total & IVA
+    const pre_iva_total = subtotal - frequency_discount + extras_total;
+    const iva_amount = business?.country === 'ES' ? pre_iva_total * 0.21 : 0;
+    const computed_total = pre_iva_total + iva_amount;
 
     // 7. Duration
     const duration_hours = Math.round(((baseWithBaths * multiplier) / 45) * 2) / 2;
@@ -175,12 +179,14 @@ export default function Quotes() {
       subtotal,
       frequency_discount,
       extras_total,
-      total_price: form.manual_price !== null ? form.manual_price : total_price,
+      pre_iva_total,
+      iva_amount,
+      total_price: form.manual_price !== null ? form.manual_price : computed_total,
       duration_hours,
       confidence_score,
       is_custom: form.manual_price !== null
     };
-  }, [form]);
+  }, [form, business]);
 
   const toggleExtra = (extra: string) => {
     setForm(prev => ({
@@ -270,13 +276,14 @@ export default function Quotes() {
       ? `\n✨ Extras: ${form.extras.map(e => extrasLabel[e]).join(', ')}`
       : '';
 
+    const ivaText = business?.country === 'ES' ? `\n(Incluye 21% IVA: ${format(calculatedQuote.iva_amount)})` : '';
     const message = `Hola! Aquí está tu cotización de ${business?.business_name || 'tu limpieza'} 🧹
 
 🏠 Propiedad: ${form.property_type}, ${form.bedrooms} cuartos / ${form.bathrooms} baños
 🧹 Servicio: ${cleanTypeLabel[form.clean_type] || form.clean_type}
 📅 Frecuencia: ${frequencyLabel[form.frequency] || form.frequency}${extrasText}
 
-💰 *Total por visita: $${calculatedQuote.total_price.toFixed(2)}*
+💰 *Total por visita: ${format(calculatedQuote.total_price)}*${ivaText}
 ⏱ Duración estimada: ${calculatedQuote.duration_hours} horas
 
 Esta cotización es válida por 7 días.
@@ -511,7 +518,7 @@ Esta cotización es válida por 7 días.
                       )}
                     >
                       <span className="text-sm font-medium">{ext.label}</span>
-                      <span className="text-[10px] font-bold text-[var(--text-muted)]">+${ext.price}</span>
+                      <span className="text-[10px] font-bold text-[var(--text-muted)]">+{format(ext.price)}</span>
                     </button>
                   ))}
                 </div>
@@ -598,7 +605,7 @@ Esta cotización es válida por 7 días.
                 )}
               </div>
               <div className="text-5xl font-black text-[var(--accent)] font-mono flex items-baseline gap-1">
-                <span className="text-2xl font-bold">$</span>
+                <span className="text-2xl font-bold">{symbol}</span>
                 {calculatedQuote.total_price.toFixed(2)}
               </div>
 
@@ -613,7 +620,7 @@ Esta cotización es válida por 7 días.
                 <div>
                   <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Precio / Hora</p>
                   <p className="text-sm font-black text-[var(--success)]">
-                    ${(calculatedQuote.total_price / calculatedQuote.duration_hours).toFixed(2)}/h
+                    {format(calculatedQuote.total_price / calculatedQuote.duration_hours)}/h
                   </p>
                 </div>
               </div>
@@ -623,28 +630,34 @@ Esta cotización es válida por 7 días.
             <div className="space-y-3 mb-8 text-[13px]">
               <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed">
                 <span className="text-[var(--text-secondary)]">Precio Base ({form.bedrooms}B)</span>
-                <span className="font-bold font-mono">${calculatedQuote.base_price.toFixed(2)}</span>
+                <span className="font-bold font-mono">{format(calculatedQuote.base_price)}</span>
               </div>
               {calculatedQuote.bathrooms_extra > 0 && (
                 <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed">
                   <span className="text-[var(--text-secondary)]">Baños extra ({form.bathrooms})</span>
-                  <span className="font-bold font-mono">+${calculatedQuote.bathrooms_extra.toFixed(2)}</span>
+                  <span className="font-bold font-mono">+{format(calculatedQuote.bathrooms_extra)}</span>
                 </div>
               )}
               <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed">
                 <span className="text-[var(--text-secondary)]">Multiplicador Limpieza (×{calculatedQuote.multiplier})</span>
-                <span className="font-bold font-mono">${(calculatedQuote.subtotal).toFixed(2)}</span>
+                <span className="font-bold font-mono">{format(calculatedQuote.subtotal)}</span>
               </div>
               {calculatedQuote.frequency_discount > 0 && (
                 <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed">
                   <span className="text-[var(--success)] font-bold">Descuento {form.frequency}</span>
-                  <span className="font-bold font-mono text-[var(--success)]">-${calculatedQuote.frequency_discount.toFixed(2)}</span>
+                  <span className="font-bold font-mono text-[var(--success)]">-{format(calculatedQuote.frequency_discount)}</span>
                 </div>
               )}
               {calculatedQuote.extras_total > 0 && (
                 <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed">
                   <span className="text-amber-600 font-bold">Extras Seleccionados</span>
-                  <span className="font-bold font-mono text-amber-600">+${calculatedQuote.extras_total.toFixed(2)}</span>
+                  <span className="font-bold font-mono text-amber-600">+{format(calculatedQuote.extras_total)}</span>
+                </div>
+              )}
+              {business?.country === 'ES' && (
+                <div className="flex justify-between py-1.5 border-b border-[var(--border)] border-dashed bg-rose-50/50 -mx-3 px-3 rounded-lg mt-2">
+                  <span className="text-rose-600 font-bold">IVA (21%)</span>
+                  <span className="font-bold font-mono text-rose-600">+{format(calculatedQuote.iva_amount)}</span>
                 </div>
               )}
             </div>
@@ -749,7 +762,7 @@ Esta cotización es válida por 7 días.
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-sm font-black text-[var(--accent)] font-mono">
-                      ${q.total_price?.toFixed(2)}
+                      {format(q.total_price)}
                     </td>
                     <td className="px-6 py-4">
                       <Badge className={cn(

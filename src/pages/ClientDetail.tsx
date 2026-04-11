@@ -147,9 +147,17 @@ export default function ClientDetail() {
 
   const sendReminder = (service: Service) => {
     if (!client) return;
-    const message = `Hola ${client.name.split(' ')[0]}, te escribo de ${business?.business_name}. Te envío este recordatorio del servicio de limpieza del ${formatDate(service.date)} por un monto de ${formatCurrency(service.amount)}. ¡Muchas gracias!`;
+    const message = `Hola ${client.name.split(' ')[0]}, te escribo de ${business?.business_name}. Te envío este recordatorio del servicio de limpieza del ${formatDate(service.date, business?.country)} por un monto de ${formatCurrency(service.amount, business?.country)}. ¡Muchas gracias!`;
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/1${client.phone.replace(/\D/g,'')}?text=${encodedMessage}`, '_blank');
+    
+    let phoneDigits = client.phone.replace(/\D/g, '');
+    if (business?.country === 'ES') {
+      if (!phoneDigits.startsWith('34')) phoneDigits = '34' + phoneDigits;
+    } else {
+      if (!phoneDigits.startsWith('1')) phoneDigits = '1' + phoneDigits;
+    }
+    
+    window.open(`https://wa.me/${phoneDigits}?text=${encodedMessage}`, '_blank');
   };
 
   const totalGenerated = services.reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -185,7 +193,7 @@ export default function ClientDetail() {
               </Badge>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 opacity-70" />
-                <span>{formatPhone(client.phone)}</span>
+                <span>{formatPhone(client.phone, business?.country)}</span>
               </div>
             </div>
           </div>
@@ -220,7 +228,7 @@ export default function ClientDetail() {
             </h3>
             <div className="space-y-6">
               <InfoRow icon={MapPin} label="Dirección Principal" value={`${client.address}, ${client.city}, ${client.state}`} />
-              <InfoRow icon={Phone} label="WhatsApp Business" value={formatPhone(client.phone)} />
+              <InfoRow icon={Phone} label="WhatsApp Business" value={formatPhone(client.phone, business?.country)} />
               {client.notes && (
                 <div className="space-y-2.5">
                   <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest px-1">Notas del Perfil</p>
@@ -285,7 +293,7 @@ export default function ClientDetail() {
                   <tbody className="divide-y divide-[var(--border)]">
                     {services.map((service) => (
                       <tr key={service.id} className="hover:bg-[var(--bg-hover)]/30 transition-colors group">
-                        <td className="px-6 py-5 text-sm font-medium text-[var(--text-primary)]">{formatDate(service.date)}</td>
+                        <td className="px-6 py-5 text-sm font-medium text-[var(--text-primary)]">{formatDate(service.date, business?.country)}</td>
                         <td className="px-6 py-5 text-sm font-bold font-mono text-[var(--text-primary)]">{formatCurrency(service.amount)}</td>
                         <td className="px-6 py-5 text-sm text-center">
                           <Badge variant={service.status === 'paid' ? 'success' : 'warning'}>

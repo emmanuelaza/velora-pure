@@ -12,6 +12,7 @@ create table if not exists public.businesses (
   phone         text,
   city          text,
   state         text,
+  zip_code      text default '',
   country       text default 'US',
   zelle_info    text default '',
   venmo_info    text default '',
@@ -19,6 +20,7 @@ create table if not exists public.businesses (
   bizum_info    text default '',
   bank_name     text default '',
   iban          text default '',
+  nif_cif       text default '',
   subscription_status text default 'trial',
   trial_ends_at timestamptz,
   created_at    timestamptz default now()

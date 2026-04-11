@@ -193,7 +193,7 @@ export default function Clients() {
                     </div>
                     <div className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mt-0.5">
                       <Phone className="w-3.5 h-3.5" />
-                      <span>{formatPhone(client.phone)}</span>
+                      <span>{formatPhone(client.phone, business?.country)}</span>
                     </div>
                   </div>
 

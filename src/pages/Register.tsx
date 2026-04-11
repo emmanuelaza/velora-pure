@@ -22,6 +22,8 @@ export default function Register() {
     city: '',
     country: 'US',
     state: 'Florida',
+    zipCode: '',
+    nifCif: '',
     email: '',
     password: ''
   });
@@ -55,7 +57,9 @@ export default function Register() {
         phone: formData.phone,
         city: formData.city,
         state: formData.state,
+        zip_code: formData.zipCode,
         country: formData.country,
+        nif_cif: formData.country === 'ES' ? formData.nifCif : '',
         subscription_status: 'trialing',
         trial_ends_at: trialEndsAt.toISOString(),
       });
@@ -188,6 +192,24 @@ export default function Register() {
                   <option key={state} value={state}>{state}</option>
                 ))}
               </Select>
+              <Input
+                label={formData.country === 'US' ? "Zip Code" : "Código Postal"}
+                placeholder={formData.country === 'US' ? "10001" : "28001"}
+                icon={MapPin}
+                value={formData.zipCode}
+                onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                required
+              />
+              {formData.country === 'ES' && (
+                <Input
+                  label="NIF / CIF"
+                  placeholder="B12345678"
+                  icon={Building2}
+                  value={formData.nifCif}
+                  onChange={e => setFormData({ ...formData, nifCif: e.target.value })}
+                  required
+                />
+              )}
             </div>
 
             <div className="h-px bg-[var(--border)] my-2 opacity-50" />

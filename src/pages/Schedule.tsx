@@ -295,7 +295,7 @@ export default function Schedule() {
                   <Calendar className="w-4 h-4 text-[var(--accent)]" />
                 </div>
                 <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
-                  {formatDate(group.day)}
+                  {formatDate(group.day, business?.country)}
                 </h2>
                 <div className="h-px flex-1 bg-[var(--border)] ml-2" />
                 <span className="text-[12px] text-[var(--text-muted)]">{group.items.length} servicios</span>

@@ -519,7 +519,7 @@ export default function Employees() {
                           <p className="font-bold text-[var(--text-primary)] text-sm">{pay.employees?.name}</p>
                         </td>
                         <td className="px-6 py-5 text-xs text-[var(--text-secondary)] font-medium">
-                          {formatDate(pay.period_start)} al {formatDate(pay.period_end)}
+                          {formatDate(pay.period_start, business?.country)} al {formatDate(pay.period_end, business?.country)}
                         </td>
                         <td className="px-6 py-5 font-mono font-bold text-right text-[var(--success)]">{formatCurrency(pay.amount)}</td>
                         <td className="px-6 py-5 text-center text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest opacity-60">

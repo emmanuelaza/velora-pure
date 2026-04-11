@@ -17,8 +17,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const extrasLabel: Record<string, string> = {
     pet: 'Suplemento mascota', fridge: 'Interior de nevera',
-    windows: 'Ventanas', oven: 'Horno', laundry: 'Lavandería'
+    windows: 'Ventanas', oven: 'Horno', laundry: 'Lavandería',
+    cabinets: 'Interior de gabinetes', walls: 'Limpieza de paredes'
   }
+
+  const isES = business?.country === 'ES';
+  const currencySymbol = isES ? '€' : '$';
+  
+  const formatMoney = (val: number) => {
+    return isES 
+      ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(val)
+      : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+  }
+
+  const dateLocale = isES ? 'es-ES' : 'en-US';
+  const dateFormatOptions: Intl.DateTimeFormatOptions = { 
+    year: 'numeric', 
+    month: isES ? '2-digit' : 'long', 
+    day: '2-digit' 
+  };
 
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -59,11 +76,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <div class="logo-area">
       <h1>${business?.business_name || 'Mi Negocio de Limpieza'}</h1>
       <p>${business?.owner_name || ''}</p>
+      ${isES && business?.nif_cif ? `<p>NIF/CIF: ${business.nif_cif}</p>` : ''}
       <p>${business?.phone || ''}</p>
     </div>
     <div class="quote-info">
       <div class="quote-num">Cotización #${Date.now().toString().slice(-6)}</div>
-      <div class="quote-date">${new Date().toLocaleDateString('es-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      <div class="quote-date">${new Date().toLocaleDateString(dateLocale, dateFormatOptions)}</div>
     </div>
   </div>
 
@@ -83,11 +101,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <tr><th>Concepto</th><th style="text-align:right">Monto</th></tr>
     </thead>
     <tbody>
-      <tr><td>Limpieza base (${quote.property_type}, ${quote.sqft || '—'} sqft)</td><td>$${quote.base_price?.toFixed(2)}</td></tr>
+      <tr><td>Limpieza base (${quote.property_type}, ${quote.sqft || '—'} sqft)</td><td>${formatMoney(quote.base_price)}</td></tr>
       <tr><td>Multiplicador tipo (${cleanTypeLabel[quote.clean_type] || quote.clean_type})</td><td>×${quote.multiplier}</td></tr>
-      ${quote.frequency_discount > 0 ? `<tr><td>Descuento por frecuencia (${frequencyLabel[quote.frequency]})</td><td>–$${quote.frequency_discount?.toFixed(2)}</td></tr>` : ''}
-      ${quote.extras_total > 0 ? `<tr><td>Extras adicionales</td><td>+$${quote.extras_total?.toFixed(2)}</td></tr>` : ''}
-      <tr class="total-row"><td>Total por visita</td><td>$${quote.total_price?.toFixed(2)}</td></tr>
+      ${quote.frequency_discount > 0 ? `<tr><td>Descuento por frecuencia (${frequencyLabel[quote.frequency]})</td><td>–${formatMoney(quote.frequency_discount)}</td></tr>` : ''}
+      ${quote.extras_total > 0 ? `<tr><td>Extras adicionales</td><td>+${formatMoney(quote.extras_total)}</td></tr>` : ''}
+      ${isES ? `<tr style="color: #64748B;"><td>Subtotal</td><td>${formatMoney(quote.pre_iva_total)}</td></tr>
+      <tr><td style="color: #E11D48; font-weight: 500;">IVA (21%)</td><td style="color: #E11D48;">+${formatMoney(quote.iva_amount)}</td></tr>` : ''}
+      <tr class="total-row"><td>Total por visita</td><td>${formatMoney(quote.total_price)}</td></tr>
     </tbody>
   </table>
 
@@ -98,8 +118,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     </thead>
     <tbody>
       <tr><td>Duración estimada</td><td>${quote.duration_hours} horas</td></tr>
-      <tr><td>Precio por hora implícito</td><td>$${(quote.total_price / quote.duration_hours).toFixed(2)}/hr</td></tr>
+      <tr><td>Precio por hora implícito</td><td>${formatMoney(quote.total_price / quote.duration_hours)}/hr</td></tr>
       <tr><td>Frecuencia de servicio</td><td>${frequencyLabel[quote.frequency] || quote.frequency}</td></tr>
+      ${isES && business?.iban ? `<tr><td>IBAN para pagos</td><td>${business.iban}</td></tr>` : ''}
     </tbody>
   </table>
 

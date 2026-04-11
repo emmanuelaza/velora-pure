@@ -431,7 +431,7 @@ export default function Dashboard() {
               recentServices.map(service => (
                 <div key={service.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 group">
                   <div className="flex items-center gap-4">
-                    <div className="text-xs font-bold text-[var(--text-muted)] w-10 uppercase">{formatDateShort(service.date)}</div>
+                    <div className="text-xs font-bold text-[var(--text-muted)] w-10 uppercase">{formatDateShort(service.date, business?.country)}</div>
                     <div>
                       <p className="font-semibold text-sm text-[var(--text-primary)]">{service.client_name}</p>
                       <p className="font-mono text-sm text-[var(--text-secondary)]">{formatCurrency(service.amount)}</p>
