@@ -40,6 +40,9 @@ export default function App() {
   const isSubscriptionValid = () => {
     if (!business) return false;
 
+    // Lifetime users always have access
+    if (business.lifetime === true) return true;
+
     const { subscription_status, trial_ends_at } = business;
     
     // Status can be 'active' or 'trialing' with a future date

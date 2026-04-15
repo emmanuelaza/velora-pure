@@ -9,8 +9,9 @@ export default function SubscriptionBlockingScreen() {
   const navigate = useNavigate();
   const { business } = useBusiness();
 
-  // Safety check: if by some reason we get here and the plan is actually valid, we go back
-  const isActive = business?.subscription_status === 'active' || 
+  // Safety check: if plan is valid or user is lifetime, redirect back
+  const isActive = business?.lifetime === true ||
+    business?.subscription_status === 'active' || 
     (business?.subscription_status === 'trialing' && business?.trial_ends_at && new Date(business.trial_ends_at).getTime() > Date.now());
 
   if (isActive) {

@@ -1,5 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/api/paddle-webhook", "destination": "/api/paddle-webhook" },
+    { "source": "/api/create-checkout", "destination": "/api/create-checkout" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite"

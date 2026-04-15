@@ -1,72 +1,61 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
+const PADDLE_API_BASE = 'https://sandbox-api.paddle.com' // Change to api.paddle.com for production
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { userEmail, businessId } = req.body
+  const { priceId, userEmail, businessId } = req.body
 
-  const storeId = process.env.LEMONSQUEEZY_STORE_ID
-  const variantId = process.env.LEMONSQUEEZY_VARIANT_ID
-  const apiKey = process.env.LEMONSQUEEZY_API_KEY
+  const apiKey = process.env.PADDLE_API_KEY
   const appUrl = process.env.APP_URL || 'https://velora-pure.vercel.app'
 
-  if (!apiKey || !storeId || !variantId) {
-    console.error('Missing Lemon Squeezy configuration')
-    return res.status(500).json({ error: 'Configuración de Lemon Squeezy incompleta' })
+  if (!apiKey || !priceId) {
+    console.error('Missing Paddle configuration or priceId')
+    return res.status(500).json({ error: 'Configuración de Paddle incompleta' })
   }
 
-  const response = await fetch(
-    `https://api.lemonsqueezy.com/v1/checkouts`,
-    {
+  try {
+    const response = await fetch(`${PADDLE_API_BASE}/transactions`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/vnd.api+json',
-        'Content-Type': 'application/vnd.api+json',
-        'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        data: {
-          type: 'checkouts',
-          attributes: {
-            checkout_data: {
-              email: userEmail,
-              custom: {
-                business_id: businessId
-              }
-            },
-            checkout_options: {
-              embed: false,
-              media: false,
-              desc: false
-            },
-            product_options: {
-              name: 'Velora Pure',
-              description: 'Plataforma para negocios de limpieza · $229/mes',
-              redirect_url: `${appUrl}/billing?success=true`,
-              receipt_button_text: 'Ir a mi dashboard',
-              receipt_thank_you_note: '¡Bienvenido a Velora Pure! Tu cuenta está activa.'
-            }
+        items: [
+          {
+            price_id: priceId,
+            quantity: 1,
           },
-          relationships: {
-            store: {
-              data: { type: 'stores', id: String(storeId) }
-            },
-            variant: {
-              data: { type: 'variants', id: String(variantId) }
-            }
-          }
-        }
-      })
+        ],
+        customer: userEmail ? { email: userEmail } : undefined,
+        custom_data: {
+          business_id: businessId,
+        },
+        checkout: {
+          url: `${appUrl}/billing?success=true`,
+        },
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('Paddle API error:', JSON.stringify(data))
+      return res.status(500).json({ error: 'Error al crear el checkout con Paddle' })
     }
-  )
 
-  const data = await response.json()
-  const checkoutUrl = data?.data?.attributes?.url
+    const checkoutUrl = data?.data?.checkout?.url
 
-  if (!checkoutUrl) {
-    console.error('Lemon Squeezy error:', JSON.stringify(data))
-    return res.status(500).json({ error: 'No se pudo generar el checkout' })
+    if (!checkoutUrl) {
+      console.error('No checkout URL from Paddle:', JSON.stringify(data))
+      return res.status(500).json({ error: 'No se pudo generar el checkout' })
+    }
+
+    return res.status(200).json({ url: checkoutUrl })
+  } catch (err) {
+    console.error('Unexpected error creating Paddle checkout:', err)
+    return res.status(500).json({ error: 'Error inesperado al generar el checkout' })
   }
-
-  return res.status(200).json({ url: checkoutUrl })
 }

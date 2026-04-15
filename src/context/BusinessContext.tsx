@@ -21,9 +21,16 @@ interface Business {
   iban?: string;
   nif_cif?: string;
   subscription_status: 'pending' | 'trial' | 'trialing' | 'active' | 'past_due' | 'canceled';
+  // Legacy LemonSqueezy (kept for backwards compat)
   lemonsqueezy_subscription_id?: string;
   trial_ends_at?: string;
   logo_url?: string;
+  // Paddle billing
+  plan_type?: 'monthly' | 'yearly' | 'lifetime';
+  paddle_subscription_id?: string;
+  paddle_customer_id?: string;
+  next_billing_date?: string;
+  lifetime?: boolean;
 }
 
 interface BusinessContextType {
